@@ -1,0 +1,24 @@
+{
+    "files.associations": {
+        "elog.h": "c",
+        "bsp_other.h": "c",
+        "bsp_log.h": "c",
+        "bsp_define.h": "c",
+        "main.h": "c",
+        "bsp_usart.h": "c",
+        "bsp_kinematics.h": "c",
+        "stdint.h": "c",
+        "bsp_imu.h": "c",
+        "cmsis_os.h": "c",
+        "bsp_encoder.h": "c",
+        "bsp_gray.h": "c",
+        "string.h": "c",
+        "bsp_cmd.h": "c",
+        "cstring": "c",
+        "bsp_motor.h": "c",
+        "bsp_vin.h": "c",
+        "bsp_iic.h": "c",
+        "bsp_delay.h": "c",
+        "inv_mpu.h": "c"
+    }
+}
