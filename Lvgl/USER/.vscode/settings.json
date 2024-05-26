@@ -1,0 +1,16 @@
+{
+    "files.associations": {
+        "xpt2046_lcd.h": "c",
+        "led.h": "c",
+        "btim.h": "c",
+        "lvgl.h": "c",
+        "lv_port_indev_template.h": "c",
+        "lcd.h": "c",
+        "touch.h": "c",
+        "lv_demo_stress.h": "c",
+        "cmath": "c",
+        "random": "c",
+        "*.tcc": "c",
+        "sys.h": "c"
+    }
+}
