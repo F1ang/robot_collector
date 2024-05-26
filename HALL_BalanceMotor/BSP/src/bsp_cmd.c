@@ -140,18 +140,18 @@ void show_imu(void)
         //WIT_IMU();
 
 				
-				printf("X:%.2f Y:%.2f Z:%.2f\r\n",
-					imu_wit_data.roll,
-					imu_wit_data.pitch,
-					imu_wit_data.yaw);
-			
-				//LOG_I("%d        %d\r\n", encoder_delta[0], encoder_delta[1]);
-			
-//							printf("X:%.2f Y:%.2f Z:%.2f\r\n",
-//					imu_wit_data.gyro_x,
-//					imu_wit_data.gyro_y,
-//					imu_wit_data.gyro_z);
-//			
+        // printf("X:%.2f Y:%.2f Z:%.2f\r\n",
+        // 	imu_wit_data.roll,
+        // 	imu_wit_data.pitch,
+        // 	imu_wit_data.yaw);
+    
+        //LOG_I("%d        %d\r\n", encoder_delta[0], encoder_delta[1]);
+    
+        //							printf("X:%.2f Y:%.2f Z:%.2f\r\n",
+        //					imu_wit_data.gyro_x,
+        //					imu_wit_data.gyro_y,
+        //					imu_wit_data.gyro_z);
+        //			
 			
 			
         cmd_exit();

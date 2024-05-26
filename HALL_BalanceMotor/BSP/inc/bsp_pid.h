@@ -133,6 +133,4 @@ void Turn_Speed(Pid_Position_t *TurnPD, float GYROZ, int16_t *pi, float ACCELZ);
 int Velocity(int Target,int encoder_left,int encoder_right);
 int Vertical(float Med,float Angle,float gyro_X);
 
-int sudu(int Target, int encoder_left,int encoder_right);
-
 #endif //HALL_BALANCEMOTOR_BSP_PID_H

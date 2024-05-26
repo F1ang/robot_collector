@@ -42,7 +42,6 @@ int fgetc(FILE * F)
     return ch_r;
 }
 /*-------------------- log pack的使用printf() --------------------*/
-
 /*-------------------- Clion使用printf() --------------------*/
 //#ifdef __GNUC__
 //#define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
@@ -98,23 +97,16 @@ uint32_t rx_len = 0;
 
 void Wit_imu_data(void)
 {
-	//u16 crc = 0;
-	//crc = WITIMU_SUMCRC(rx_buffer, 10);
-	//if (crc == rx_buffer[10]){
-		if (rx_buffer[1] == 0x52) {
-			imu_wit_data.gyro_x = (s16)(((s16)rx_buffer[3] << 8) | rx_buffer[2]) / 32768.0f * 2000.0f;
-			imu_wit_data.gyro_y = (s16)(((s16)rx_buffer[5] << 8) | rx_buffer[4]) / 32768.0f * 2000.0f;
-			imu_wit_data.gyro_z = (s16)(((s16)rx_buffer[7] << 8) | rx_buffer[6]) / 32768.0f * 2000.0f;
-		}
-		if (rx_buffer[12] == 0x53) {
-//			imu_wit_data.roll = (s16)(((s16)rx_buffer[14] << 8) | rx_buffer[13])  / 32768.0f * 16.0f;
-//			imu_wit_data.pitch = (s16)(((s16)rx_buffer[16] << 8) | rx_buffer[15]) / 32768.0f * 16.0f;
-//			imu_wit_data.yaw = (s16)(((s16)rx_buffer[18] << 8) | rx_buffer[17])   / 32768.0f * 16.0f;
-				imu_wit_data.roll = (s16) (((s16)rx_buffer[14] << 8) | rx_buffer[13])  / 32768.0f * 160.0f;
-				imu_wit_data.pitch = (s16) (((s16)rx_buffer[16] << 8) | rx_buffer[15]) / 32768.0f * 160.0f;
-				imu_wit_data.yaw = (s16) (((s16)rx_buffer[18] << 8) | rx_buffer[17])   / 32768.0f * 160.0f;
-		}
-	//}
+    if (rx_buffer[1] == 0x52) {
+        imu_wit_data.gyro_x = (s16)(((s16)rx_buffer[3] << 8) | rx_buffer[2]) / 32768.0f * 2000.0f;
+        imu_wit_data.gyro_y = (s16)(((s16)rx_buffer[5] << 8) | rx_buffer[4]) / 32768.0f * 2000.0f;
+        imu_wit_data.gyro_z = (s16)(((s16)rx_buffer[7] << 8) | rx_buffer[6]) / 32768.0f * 2000.0f;
+    }
+    if (rx_buffer[12] == 0x53) {
+        imu_wit_data.roll = (s16) (((s16)rx_buffer[14] << 8) | rx_buffer[13])  / 32768.0f * 160.0f;
+        imu_wit_data.pitch = (s16) (((s16)rx_buffer[16] << 8) | rx_buffer[15]) / 32768.0f * 160.0f;
+        imu_wit_data.yaw = (s16) (((s16)rx_buffer[18] << 8) | rx_buffer[17])   / 32768.0f * 160.0f;
+    }
 }
 
 // 消息格式:
@@ -201,12 +193,12 @@ bool USART_Send_Pack(UART_HandleTypeDef *huart, short *WriteData, unsigned char 
 void USART_Init(void)
 {
     HAL_UART_Receive_IT(&huart1, (uint8_t *)USART_Debug_RX_Buffer, 1);  // 开启接收中断
-		//HAL_UART_Receive_IT(&huart2, (uint8_t *)USART_Robot_RX_Buffer, 1);  // 开启接收中断
+	//HAL_UART_Receive_IT(&huart2, (uint8_t *)USART_Robot_RX_Buffer, 1);  // 开启接收中断
 
-		__HAL_UART_ENABLE_IT(&huart2, UART_IT_IDLE); //使能IDLE中断
-		HAL_UART_Receive_DMA(&huart2,rx_buffer,BUFFER_SIZE);
+    __HAL_UART_ENABLE_IT(&huart2, UART_IT_IDLE); //使能IDLE中断
+    HAL_UART_Receive_DMA(&huart2,rx_buffer,BUFFER_SIZE);
 	
-    //LOG_I("USART Init Success\r\n");
+    LOG_I("USART Init Success\r\n");
 }
 
 

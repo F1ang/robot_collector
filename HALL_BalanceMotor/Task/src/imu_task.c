@@ -35,35 +35,18 @@ void imu_task(void *argument)
     timx_init();
     for(;;)
     {
-       //MPU6050_DMP_GetData(&robot_imu_dmp_data);  /* 200hz = 5ms */
-       xSemaphoreTake(imu_semaHandle,portMAX_DELAY);  /* 50hz计算speed */
+        //    MPU6050_DMP_GetData(&robot_imu_dmp_data);  /* 200hz = 5ms */
+        //    xSemaphoreTake(imu_semaHandle,portMAX_DELAY);
 
-       //计算编码器变化值
-//       encoder_delta[0] = Encoder_Get_Counter(1) - ENCODER_MID_VALUE;
-//       encoder_delta[1] = -(Encoder_Get_Counter(2) - ENCODER_MID_VALUE);
-//			
-//			 encoder_delta[0] = Encoder_Get_Counter(1);
-//       encoder_delta[1] = -(Encoder_Get_Counter(2));
+        //    encoder_delta[0] = Encoder_Get_Counter(1);
+        //    encoder_delta[1] = -(Encoder_Get_Counter(2));
 
-//			 speed_out = Velocity(0, encoder_delta[0], encoder_delta[1]);	//速度环
-//			
-//			 vertical_out = Vertical(speed_out+Machine_Angle,imu_wit_data.pitch,imu_wit_data.gyro_y);			//直立环
-//		
-       //计算编码器累加值-里程
-    //    encoder_inc[0] += encoder_delta[0];
-    //    encoder_inc[1] += encoder_delta[1];
-        //LOG_I("%d %d\r\n", encoder_delta[0], encoder_delta[1]);
+        //    speed_out = Velocity(0, encoder_delta[0],encoder_delta[1]);  
+        //    vertical_out = Vertical(speed_out+Machine_Angle,imu_wit_data.pitch,imu_wit_data.gyro_y);			//直立环
+        //    MOTOR_SetSpeed(1, vertical_out);
+        //    MOTOR_SetSpeed(2, vertical_out);
+		// Wit_imu_data();
 
-//			LOG_I("Pitch:%d Roll:%d Yaw:%d\r\n",
-//            robot_imu_dmp_data.pitch,
-//            robot_imu_dmp_data.roll,
-//            robot_imu_dmp_data.yaw);
-			
-//			 LOG_I("x:%d y:%d z:%d\r\n",
-//            robot_imu_dmp_data.gyro.x,
-//            robot_imu_dmp_data.gyro.y,
-//            robot_imu_dmp_data.gyro.z);
-			
-       osDelay(5);
+        osDelay(5);
     }
 }
