@@ -49,15 +49,15 @@
                                 }                             \
 /* Private functions ---------------------------------------------------------*/
 /* Private variable ----------------------------------------------------------*/
-static volatile Curr_Components Stat_Curr_q_d_ref;
+static volatile Curr_Components Stat_Curr_q_d_ref;  //Iq Id
 static Curr_Components Stat_Curr_q_d_ref_ref;
 
-#ifdef FEED_FORWARD_CURRENT_REGULATION
+#ifdef FEED_FORWARD_CURRENT_REGULATION              // 前馈电流调节
 static Volt_Components Stat_Volt_q_d_3;
 static Volt_Components Stat_Volt_q_d_2;
 #endif
 
-#ifdef FLUX_WEAKENING
+#ifdef FLUX_WEAKENING                               // 弱磁参数
 static Volt_Components Stat_Volt_q_d_1;
 s16 hFW_V_Ref = FW_VOLTAGE_REF;
 s16 hFW_P_Gain = FW_KP_GAIN;
@@ -92,7 +92,7 @@ void FOC_Init (void)
   FOC_MTPAInterface_Init();
 #endif  
   
-#ifdef FEED_FORWARD_CURRENT_REGULATION  
+#ifdef FEED_FORWARD_CURRENT_REGULATION                      // 前馈电流调节
   Stat_Volt_q_d_3.qV_Component1 = 0;
   Stat_Volt_q_d_3.qV_Component2 = 0; 
   Stat_Volt_q_d_2.qV_Component1 = 0;
@@ -127,16 +127,16 @@ void FOC_Model(void)
   
 #if defined HALL_SENSORS
   //Integrate Speed for rotor angle update
-  HALL_IncElectricalAngle();
+  HALL_IncElectricalAngle();  // 电角度
 #endif    
   
   /**********STARTS THE VECTOR CONTROL ************************/  
  
-  Stat_Curr_a_b = GET_PHASE_CURRENTS();
+  Stat_Curr_a_b = GET_PHASE_CURRENTS();                           // 采样相电流
   
-  Stat_Curr_alfa_beta = Clarke(Stat_Curr_a_b);
+  Stat_Curr_alfa_beta = Clarke(Stat_Curr_a_b);                    // Clarke变换 Ia Ip
   
-  Stat_Curr_q_d = Park(Stat_Curr_alfa_beta,GET_ELECTRICAL_ANGLE);  
+  Stat_Curr_q_d = Park(Stat_Curr_alfa_beta,GET_ELECTRICAL_ANGLE); // Parkv变换 Id Iq 
 
 #ifdef NO_SPEED_SENSORS  
   STO_Calc_Rotor_Angle(Stat_Volt_alfa_beta,Stat_Curr_alfa_beta,MCL_Get_BusVolt());
@@ -152,7 +152,7 @@ void FOC_Model(void)
   Stat_Volt_q_d_4.qV_Component2 = PID_Regulator(Stat_Curr_q_d_ref_ref.qI_Component2,
                          Stat_Curr_q_d.qI_Component2,&PID_Flux_InitStructure);  
 
- 
+  // 系统符合线性叠加：Stat_Volt_q_d_4由速度环求得Vq Vd   Stat_Volt_q_d_3由前馈控制预测得Vq Vd
   wtemp = (s32)(Stat_Volt_q_d_4.qV_Component1 + Stat_Volt_q_d_3.qV_Component1);
   
   SATURATION_TO_S16(wtemp);
@@ -177,18 +177,18 @@ void FOC_Model(void)
 #endif
   
   //circle limitation
-  RevPark_Circle_Limitation();
+  RevPark_Circle_Limitation(); // 幅值(防过调制)
  
   /*Performs the Reverse Park transformation,
   i.e transforms stator voltages Vqs and Vds into Valpha and Vbeta on a 
   stationary reference frame*/
 
-  Stat_Volt_alfa_beta = Rev_Park(Stat_Volt_q_d);
+  Stat_Volt_alfa_beta = Rev_Park(Stat_Volt_q_d); // 反Park
 
   /*Valpha and Vbeta finally drive the power stage*/ 
-  CALC_SVPWM(Stat_Volt_alfa_beta);
+  CALC_SVPWM(Stat_Volt_alfa_beta); // SVPWM
   
-#ifdef FEED_FORWARD_CURRENT_REGULATION  
+#ifdef FEED_FORWARD_CURRENT_REGULATION  // 前馈电流控制
   Stat_Volt_q_d_2.qV_Component1 = (s16)((Stat_Volt_q_d_2.qV_Component1*
                                   (VOLTAGE_SAMPLING_BUFFER-1)+
                                   Stat_Volt_q_d_4.qV_Component1)/
@@ -212,13 +212,11 @@ void FOC_Model(void)
 }
 
 /*******************************************************************************
-* Function Name   : FOC_CalcFluxTorqueRef
-* Description     : This function provides current components Iqs* and Ids* to be
-*                   used as reference values (by the FOC_Model function) when in
-*                   speed control mode
-* Input           : None.
-* Output          : None.
-* Return          : None.
+*功能名称:FOC_CalcFluxTorqueRef
+*描述:该函数提供当前组件的iq *和id * 作为参考值(由FOC_Model函数) 速度控制方式
+*输入:无。
+*输出:无。
+*Return: None。
 *******************************************************************************/
 void FOC_CalcFluxTorqueRef(void)
 {
@@ -228,7 +226,7 @@ void FOC_CalcFluxTorqueRef(void)
 #ifdef IPMSM_MTPA  
   Stat_Curr_q_d_ref.qI_Component2 = FOC_MTPA(Stat_Curr_q_d_ref.qI_Component1);  
 #else
-  Stat_Curr_q_d_ref.qI_Component2 = 0;
+  Stat_Curr_q_d_ref.qI_Component2 = 0;  // 最大转矩控制
 #endif
 
 #ifdef FLUX_WEAKENING
@@ -241,12 +239,13 @@ void FOC_CalcFluxTorqueRef(void)
     
     Stat_Curr_q_d_temp = FOC_FluxRegulator(Stat_Curr_q_d_ref,Stat_Volt_q_d_1,
                                            hVoltageLimit_Reference);
-    
+    /* 电流 iq**和 id** */
     PID_Speed_InitStructure.wLower_Limit_Integral =
                             -((s32)(Stat_Curr_q_d_temp.qI_Component1)*SP_KIDIV);
     PID_Speed_InitStructure.wUpper_Limit_Integral = 
                              ((s32)(Stat_Curr_q_d_temp.qI_Component1)*SP_KIDIV);
     
+    /* 限幅???? 和???? */
     if (Stat_Curr_q_d_ref.qI_Component1 > Stat_Curr_q_d_temp.qI_Component1)
     {
       Stat_Curr_q_d_ref_ref.qI_Component1 = Stat_Curr_q_d_temp.qI_Component1;
@@ -273,6 +272,7 @@ void FOC_CalcFluxTorqueRef(void)
                                         GET_SPEED_DPP,MCL_Get_BusVolt());
 #endif
   
+  /* 参考???? 和????-> FOC_Model  */
   hTorque_Reference = Stat_Curr_q_d_ref_ref.qI_Component1;
   hFlux_Reference = Stat_Curr_q_d_ref_ref.qI_Component2;  
 }

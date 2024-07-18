@@ -87,7 +87,7 @@ typedef struct {
 	} SpeedMeas_s;
 
 typedef struct {
-        u32 wPeriod;
+        u32 wPeriod;  // ????
         s8 bDirection;
         } PeriodMeas_s;
 /* Private variables ---------------------------------------------------------*/
@@ -106,7 +106,7 @@ volatile bool HallTimeOut;
 static s16 hElectrical_Angle; 
 static s16 hRotorFreq_dpp;
 #if (defined HALL_SENSORS || defined VIEW_HALL_FEEDBACK)
-static s8 bSpeed;
+static s8 bSpeed;  // ?? ?? ????? ????? ??????
 #endif
 /* Private function prototypes -----------------------------------------------*/
 PeriodMeas_s GetLastHallPeriod(void);
@@ -174,7 +174,7 @@ void HALL_HallTimerInit(void)
     
     TIM_TimeBaseStructInit(&TIM_HALLTimeBaseInitStructure);
     // Set full 16-bit working range
-    TIM_HALLTimeBaseInitStructure.TIM_Period = U16_MAX;
+    TIM_HALLTimeBaseInitStructure.TIM_Period = U16_MAX; // T=1/72000000*65535
     TIM_HALLTimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;
     TIM_TimeBaseInit(HALL_TIMER,&TIM_HALLTimeBaseInitStructure);
     
@@ -194,10 +194,10 @@ void HALL_HallTimerInit(void)
     TIM_SelectHallSensor(HALL_TIMER, ENABLE);
     
     TIM_SelectInputTrigger(HALL_TIMER, TIM_TS_TI1FP1);
-    TIM_SelectSlaveMode(HALL_TIMER,TIM_SlaveMode_Reset);
+    TIM_SelectSlaveMode(HALL_TIMER,TIM_SlaveMode_Reset);            // TI1FP1????????
    
     // Source of Update event is only counter overflow/underflow
-    TIM_UpdateRequestConfig(HALL_TIMER, TIM_UpdateSource_Regular);
+    TIM_UpdateRequestConfig(HALL_TIMER, TIM_UpdateSource_Regular); // ??/???????
     
     /* Enable the HALL_TIMER IRQChannel*/
 #if defined(TIMER2_HANDLES_HALL)
@@ -221,8 +221,8 @@ void HALL_HallTimerInit(void)
                   TIM_FLAG_CC2OF + TIM_FLAG_CC3OF + TIM_FLAG_CC4OF);
   
     // Selected input capture and Update (overflow) events generate interrupt
-    TIM_ITConfig(HALL_TIMER, TIM_IT_CC1, ENABLE);
-    TIM_ITConfig(HALL_TIMER, TIM_IT_Update, ENABLE);
+    TIM_ITConfig(HALL_TIMER, TIM_IT_CC1, ENABLE);       // ??????
+    TIM_ITConfig(HALL_TIMER, TIM_IT_Update, ENABLE);    // ????
 
     TIM_SetCounter(HALL_TIMER, HALL_COUNTER_RESET);
        TIM_Cmd(HALL_TIMER, ENABLE);
@@ -248,15 +248,16 @@ void HALL_InitHallMeasure( void )
 
    TIM_ITConfig(HALL_TIMER, TIM_IT_CC1, DISABLE);
     
-   RatioDec = FALSE;
-   RatioInc = FALSE;
-   DoRollingAverage = FALSE;
-   InitRollingAverage = FALSE;
-   HallTimeOut = FALSE;
+   RatioDec = FALSE;              // ?????
+   RatioInc = FALSE;              // ?????
+   DoRollingAverage = FALSE;      // ???????????
+   InitRollingAverage = FALSE;    // ????????????
+   HallTimeOut = FALSE;           // ???????????
 
    hCaptCounter = 0;
    bGP1_OVF_Counter = 0;
 
+  //hCapture????????? hPrscReg?????????? bDirection????????
    for (bSpeedFIFO_Index=0; bSpeedFIFO_Index < HALL_SPEED_FIFO_SIZE; 
                                                              bSpeedFIFO_Index++)
    {
@@ -269,7 +270,7 @@ void HALL_InitHallMeasure( void )
    bSpeedFIFO_Index = HALL_SPEED_FIFO_SIZE-1;
 
    // Re-initialize partly the timer
-   HALL_TIMER->PSC = HALL_MAX_RATIO;
+   HALL_TIMER->PSC = HALL_MAX_RATIO;  // ???????
    
    HALL_ClrCaptCounter();
      
@@ -310,7 +311,7 @@ s16 HALL_GetSpeed ( void )
   else
   {
     wAux = ((hRotorFreq_dpp* SAMPLING_FREQ * 10)/(65536*POLE_PAIR_NUM));
-    return (s16)wAux;
+    return (s16)wAux;  // 0.1hz??
   }
 }
 
@@ -331,17 +332,17 @@ s16 HALL_GetSpeed ( void )
 * Warning : Maximum expectable accuracy depends on CKTIM: 72MHz will give the
 * 	    best results.
 *******************************************************************************/
-s16 HALL_GetRotorFreq ( void )
+s16 HALL_GetRotorFreq ( void ) // ???????
 {
    PeriodMeas_s PeriodMeasAux;
 
    if ( DoRollingAverage)
    {
-      PeriodMeasAux = GetAvrgHallPeriod();
+      PeriodMeasAux = GetAvrgHallPeriod();  // ?????????
    }
    else
    {  // Raw period
-      PeriodMeasAux = GetLastHallPeriod();
+      PeriodMeasAux = GetLastHallPeriod();  // ?????????
    }
 
    if (HallTimeOut == TRUE)
@@ -463,19 +464,19 @@ void HALL_ClrCaptCounter(void)
 *******************************************************************************/
 PeriodMeas_s GetLastHallPeriod(void)
 {
-      PeriodMeas_s PeriodMeasAux;
-      u8 bLastSpeedFIFO_Index;
+  PeriodMeas_s PeriodMeasAux;
+  u8 bLastSpeedFIFO_Index;
 
-   // Store current index to prevent errors if Capture occurs during processing
-   bLastSpeedFIFO_Index = bSpeedFIFO_Index;
+  // Store current index to prevent errors if Capture occurs during processing
+  bLastSpeedFIFO_Index = bSpeedFIFO_Index;
 
-   // This is done assuming interval between captures is higher than time
-   // to read the two values
-   PeriodMeasAux.wPeriod = SensorPeriod[bLastSpeedFIFO_Index].hCapture;
-   PeriodMeasAux.wPeriod *= (SensorPeriod[bLastSpeedFIFO_Index].hPrscReg + 1);
-   
-   PeriodMeasAux.bDirection = SensorPeriod[bLastSpeedFIFO_Index].bDirection;
-   return (PeriodMeasAux);
+  // This is done assuming interval between captures is higher than time
+  // to read the two values
+  PeriodMeasAux.wPeriod = SensorPeriod[bLastSpeedFIFO_Index].hCapture;
+  PeriodMeasAux.wPeriod *= (SensorPeriod[bLastSpeedFIFO_Index].hPrscReg + 1);
+  
+  PeriodMeasAux.bDirection = SensorPeriod[bLastSpeedFIFO_Index].bDirection;
+  return (PeriodMeasAux);
 }
 
 
@@ -594,7 +595,7 @@ void HALL_IncElectricalAngle(void)
  
   if (hRotorFreq_dpp != HALL_MAX_PSEUDO_SPEED)
   {
-    hElectrical_Angle += hRotorFreq_dpp;
+    hElectrical_Angle += hRotorFreq_dpp;  // ????dpp->????
     hPrevRotorFreq = hRotorFreq_dpp;
   }
   else
@@ -615,7 +616,7 @@ void HALL_IncElectricalAngle(void)
 * Return      : Electrical angle s16 format
 *
 *******************************************************************************/
-void HALL_Init_Electrical_Angle(void)
+void HALL_Init_Electrical_Angle(void)  // ???????->FOC->SVPWM
 {
 #if (HALL_SENSORS_PLACEMENT == DEGREES_120) 
  switch(ReadHallState())
@@ -742,7 +743,7 @@ void TIM4_IRQHandler(void)
 	       //a speed reversal occured 
          if(bSpeed<0)
          {
-           bSpeed = POSITIVE_SWAP;
+           bSpeed = POSITIVE_SWAP;  // ???????
          }
          else
          {
@@ -760,7 +761,7 @@ void TIM4_IRQHandler(void)
               bSpeed = NEGATIVE;
             }
 		// Update angle
-        if(bSpeed<0)
+        if(bSpeed<0) // ????30°
         {
           hElectrical_Angle = (s16)(S16_PHASE_SHIFT+S16_60_PHASE_SHIFT);
         }
@@ -979,7 +980,7 @@ void TIM4_IRQHandler(void)
       
       hPrscBuf = HALL_TIMER->PSC;
 
-      while (bGP1_OVF_Counter != 0)
+      while (bGP1_OVF_Counter != 0)  // psc???Ftim3????????
       {
          wCaptBuf += 0x10000uL;// Compute the real captured value (> 16-bit)
          bGP1_OVF_Counter--;
@@ -999,12 +1000,12 @@ void TIM4_IRQHandler(void)
       SensorPeriod[bSpeedFIFO_Index].hCapture = wCaptBuf;
       SensorPeriod[bSpeedFIFO_Index].hPrscReg = hPrscBuf;
       SensorPeriod[bSpeedFIFO_Index].bDirection = bSpeed;
-      if (RatioInc)
-      {
+      if (RatioInc)       // ??????????????????????/????????
+      {     
          RatioInc = FALSE;	// Previous capture caused overflow
          // Don't change prescaler (delay due to preload/update mechanism)
       }
-      else
+      else  // ?????PSC??
       {
          if ((HALL_TIMER->PSC) < HALL_MAX_RATIO) // Avoid OVF w/ very low freq
          {
@@ -1013,7 +1014,7 @@ void TIM4_IRQHandler(void)
          }
       }
    }
-   else		// No counter overflow
+   else		// No counter overflow  
    {
       u16 hHighSpeedCapture, hClockPrescaler;   
 
@@ -1025,14 +1026,14 @@ void TIM4_IRQHandler(void)
       hClockPrescaler = HALL_TIMER->PSC;
 
       // If prsc preload reduced in last capture, store current register + 1
-      if (RatioDec)  // and don't decrease it again
+      if (RatioDec)  // and don't decrease it again  ??????PSC++
       {
          SensorPeriod[bSpeedFIFO_Index].hPrscReg = (hClockPrescaler)+1;
          RatioDec = FALSE;
       }
       else  // If prescaler was not modified on previous capture
       {
-         if (hHighSpeedCapture >= LOW_RES_THRESHOLD)// If capture range correct
+         if (hHighSpeedCapture >= LOW_RES_THRESHOLD)// If capture range correct ?????????????PSC
          {
             SensorPeriod[bSpeedFIFO_Index].hPrscReg = hClockPrescaler;
          }
@@ -1051,9 +1052,9 @@ void TIM4_IRQHandler(void)
             }
          }
       }
-   }
+   }  
     
-   if (InitRollingAverage)
+   if (InitRollingAverage)  // ?????????????
    {
         u16 hCaptBuf, hPrscBuf;
         s8 bSpeedAux;
@@ -1071,14 +1072,16 @@ void TIM4_IRQHandler(void)
       }
       InitRollingAverage = FALSE;
       // Starting from now, the values returned by MTC_GetRotorFreq are averaged
-      DoRollingAverage = TRUE;
+      DoRollingAverage = TRUE;  // ????????????
     }
-   
-  //Update Rotor Frequency Computation
+
+  /* ?????????????->dpp  */  
+
+  //Update Rotor Frequency Computation ??????
    hRotorFreq_dpp = HALL_GetRotorFreq();
   
   }
-  else 
+  else   // Updata
   {
     TIM_ClearFlag(HALL_TIMER, TIM_FLAG_Update);  
   	// an update event occured for this interrupt request generation
@@ -1098,3 +1101,8 @@ void TIM4_IRQHandler(void)
 #endif // HALL_SENSORS defined
 
 /******************* (C) COPYRIGHT 2008 STMicroelectronics *****END OF FILE****/
+/* ????????? ???????????????? ???
+??? FIFO ???? ??????? */
+
+
+

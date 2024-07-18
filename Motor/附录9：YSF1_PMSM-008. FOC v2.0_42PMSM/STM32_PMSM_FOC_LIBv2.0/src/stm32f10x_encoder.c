@@ -177,7 +177,7 @@ void ENC_Init(void)
   TIM_ClearFlag(ENCODER_TIMER, TIM_FLAG_Update);
   TIM_ITConfig(ENCODER_TIMER, TIM_IT_Update, ENABLE);
   //Reset counter
-  ENCODER_TIMER->CNT = COUNTER_RESET;
+  ENCODER_TIMER->CNT = COUNTER_RESET; // 编码器校准角度90°
   
   TIM_Cmd(ENCODER_TIMER, ENABLE);
 }
@@ -367,14 +367,14 @@ void ENC_Calc_Average_Speed(void)
   u32 i;
   u8 static bError_counter;
   
-  wtemp = ENC_Calc_Rot_Speed();
+  wtemp = ENC_Calc_Rot_Speed();  // 机械频率
   hAbstemp = ( wtemp < 0 ? - wtemp :  wtemp);
 
 /* Checks for speed measurement errors when in RUN State and saturates if 
                                                                     necessary*/  
   if (State == RUN)
   {    
-    if(hAbstemp < MINIMUM_MECHANICAL_SPEED)
+    if(hAbstemp < MINIMUM_MECHANICAL_SPEED)  // 速度测量出错
     { 
       if (wtemp < 0)
       {
@@ -420,7 +420,7 @@ void ENC_Calc_Average_Speed(void)
   
 /* Compute the average of the read speeds */
   
-  hSpeed_Buffer[bSpeed_Buffer_Index] = (s16)wtemp;
+  hSpeed_Buffer[bSpeed_Buffer_Index] = (s16)wtemp;  // 保存机械频率
   bSpeed_Buffer_Index++;
   
   if (bSpeed_Buffer_Index == SPEED_BUFFER_SIZE) 
@@ -430,7 +430,7 @@ void ENC_Calc_Average_Speed(void)
 
   wtemp=0;
 
-  for (i=0;i<SPEED_BUFFER_SIZE;i++)
+  for (i=0;i<SPEED_BUFFER_SIZE;i++)  // 平均speed机械频率
     {
     wtemp += hSpeed_Buffer[i];
     }
@@ -462,7 +462,7 @@ bool ENC_ErrorOnFeedback(void)
 * Output : details the output parameters.
 * Return : details the return value.
 *******************************************************************************/
-void ENC_Start_Up(void)
+void ENC_Start_Up(void)                       // 预定位
 {
   static u32 wTimebase=0;
   
@@ -470,23 +470,23 @@ void ENC_Start_Up(void)
     {
       // First Motor start-up, alignment must be performed
       wTimebase++;
-      if(wTimebase <= T_ALIGNMENT_PWM_STEPS)
+      if(wTimebase <= T_ALIGNMENT_PWM_STEPS)  // 上电相位校准 Iq Id
       {                  
-        hFlux_Reference = I_ALIGNMENT * wTimebase / T_ALIGNMENT_PWM_STEPS;               
-        hTorque_Reference = 0;
+        hFlux_Reference = I_ALIGNMENT * wTimebase / T_ALIGNMENT_PWM_STEPS;          // Id预定位             
+        hTorque_Reference = 0;  // Iq
         
         Stat_Curr_a_b = GET_PHASE_CURRENTS(); 
         Stat_Curr_alfa_beta = Clarke(Stat_Curr_a_b); 
         Stat_Curr_q_d = Park(Stat_Curr_alfa_beta, ALIGNMENT_ANGLE_S16);  
         /*loads the Torque Regulator output reference voltage Vqs*/   
         Stat_Volt_q_d.qV_Component1 = PID_Regulator(hTorque_Reference, 
-                        Stat_Curr_q_d.qI_Component1, &PID_Torque_InitStructure);   
+                        Stat_Curr_q_d.qI_Component1, &PID_Torque_InitStructure);   // Vq
         
         /*loads the Flux Regulator output reference voltage Vds*/
         Stat_Volt_q_d.qV_Component2 = PID_Regulator(hFlux_Reference, 
-                          Stat_Curr_q_d.qI_Component2, &PID_Flux_InitStructure); 
+                          Stat_Curr_q_d.qI_Component2, &PID_Flux_InitStructure);    // Vd
   
-        RevPark_Circle_Limitation();
+        RevPark_Circle_Limitation(); // 过调制
 
         /*Performs the Reverse Park transformation,
         i.e transforms stator voltages Vqs and Vds into Valpha and Vbeta on a 

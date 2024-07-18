@@ -38,8 +38,8 @@
 #define PWM_PRSC ((u8)0)
 
 /* Resolution: 1Hz */
-/* PWM周期 */
-#define PWM_PERIOD ((u16) (CKTIM / (u32)(2 * PWM_FREQ *(PWM_PRSC+1)))) 
+/* PWM周期计数*2=5000计数(中心对齐) */
+#define PWM_PERIOD ((u16) (CKTIM / (u32)(2 * PWM_FREQ *(PWM_PRSC+1)))) // 2500
         
 ////////////////////////////// Deadtime Value /////////////////////////////////
 /* 死区时间*/

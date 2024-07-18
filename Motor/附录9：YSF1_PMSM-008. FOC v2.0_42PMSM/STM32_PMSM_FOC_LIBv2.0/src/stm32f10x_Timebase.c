@@ -329,14 +329,14 @@ void SysTick_Handler(void)
         }
 #endif        
         //PID_Speed_Coefficients_update(XXX_Get_Speed(),PID_Speed_InitStructure);
-        FOC_CalcFluxTorqueRef();        
+        FOC_CalcFluxTorqueRef();   // 速度控制模式下， 参考值??? ? 和??? ? 由速度和磁通调节器     
       }
     }
     else
     {
       if (State == RUN)
       {
-        FOC_TorqueCtrl();
+        FOC_TorqueCtrl();         // 力矩控制模式下由外部输入(力控)
       }
     }
   }

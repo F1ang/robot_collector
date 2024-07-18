@@ -60,13 +60,14 @@ realistic in the application: this allows discriminating glitches for instance
 */
 /* 定义转子最大机械转速（转数/分），当大于它时，速度反馈不可用：用于区别故障。*/
 #define	HALL_MAX_SPEED_FDBK_RPM ((u32)30000)
-
 /* Define here the returned value if measured speed is > MAX_SPEED_FDBK_RPM
 It could be 0 or FFFF depending on upper layer software management */
 /* 如果检测到速度大于HALL_MAX_SPEED_FDBK_RPM 时，函数HALL_GetSpeed */
 /*（单位：0.1Hz）返回这个值。 */
+
 #define HALL_MAX_SPEED               ((u16)5000) // Unit is 0.1Hz
 /* 如果检测到速度大于HALL_MAX_SPEED_FDBK_RPM时，函数HALL_GetRotorFreq */
+
 /* 返回这个值。单位：dpp。 */
 // With digit-per-PWM unit (here 2*PI rad = 0xFFFF):
 #define HALL_MAX_PSEUDO_SPEED        ((s16)-32768)
@@ -76,13 +77,12 @@ realistic in the application: this allows to discriminate too low freq for
 instance */
 /* 定义转子最小机械转速(rpm)，当小于它时，速度反馈不可用。 */
 #define	HALL_MIN_SPEED_FDBK_RPM ((u16)60)
-
 /* Max TIM prescaler ratio defining the lowest expected speed feedback */
 /* -定义可以测量的最低速度（当计数=0xFFFF）*/
 /* -当电机停止时，防止时钟分频器减小过度。（每个捕获中断以优化时钟分辨 */
 /* 率时预分频器会自动调整） */
-#define HALL_MAX_RATIO		((u16)800u)
 
+#define HALL_MAX_RATIO		((u16)800u)
 /* Number of consecutive timer overflows without capture: this can indicate
 that informations are lost or that speed is decreasing very sharply */
 /* This is needed to implement hall sensors time-out. This duration depends on hall sensor
@@ -92,6 +92,7 @@ timer pre-scaler, which is variable; the time-out will be higher at low speed*/
 /* 溢出数目将不再累加。这通常表明数据已经丢失（霍尔传感器超时）或速度的急剧 */
 /* 下降。对应超时延迟根据选择定时器预分频器不同而不同，是一个变量；预分频器 */
 /*频率越高（低速），定时器超时时间越长 */
+
 #ifdef FLUX_TORQUE_PIDs_TUNING
 #define HALL_MAX_OVERFLOWS       ((u16)4)
 #else

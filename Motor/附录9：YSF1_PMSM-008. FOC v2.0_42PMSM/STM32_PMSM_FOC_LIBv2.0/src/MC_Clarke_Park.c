@@ -372,7 +372,6 @@ Curr_Components Clarke(Curr_Components Curr_Input)
 * Output         : Stat_Curr_q_d.
 * Return         : none.
 *******************************************************************************/
-
 Curr_Components Park(Curr_Components Curr_Input, s16 Theta)
 {
   Curr_Components Curr_Output;
@@ -418,17 +417,16 @@ Curr_Components Park(Curr_Components Curr_Input, s16 Theta)
 
 
 /*******************************************************************************
-* Function Name  : RevPark_Circle_Limitation
-* Description    : Check if
-*       Stat_Volt_q_d.qV_Component1^2 + Stat_Volt_q_d.qV_Component2^2 <= 32767^2
-*                  Apply limitation if previous condition is not met,
-*                  by keeping a constant ratio 
-*                  Stat_Volt_q_d.qV_Component1/Stat_Volt_q_d.qV_Component2
-* Input          : None
-* Output         : None
-* Return         : None
+*函数名称:revpark_circle_limit
+*描述:检查是否
+* Stat_Volt_q_d。qV_Component1^2 + Stat_Volt_q_d。qV_Component2^2 <= 32767^2
+*如不符合上述条件，则适用限制;
+*保持一个恒定的比率
+* Stat_Volt_q_d.qV_Component1 / Stat_Volt_q_d.qV_Component2
+*输入:无
+*输出:无
+*返回:无
 *******************************************************************************/
-
 void RevPark_Circle_Limitation(void)
 {
 s32 temp;
@@ -441,8 +439,8 @@ if ( temp > (u32)(( MAX_MODULE * MAX_MODULE) ) ) // (Vd^2+Vq^2) > MAX_MODULE^2 ?
    u16 index;
               
    temp /= (u32)(512*32768);  // min value START_INDEX, max value 127
-   temp -= START_INDEX ;   // min value 0, max value 127 - START_INDEX
-   index = circle_limit_table[(u8)temp];
+   temp -= START_INDEX ;      // min value 0, max value 127 - START_INDEX
+   index = circle_limit_table[(u8)temp]; // 
               
    temp = (s16)Stat_Volt_q_d.qV_Component1 * (u16)(index); 
    Stat_Volt_q_d.qV_Component1 = (s16)(temp/32768);  
@@ -498,12 +496,11 @@ Volt_Components Rev_Park(Volt_Components Volt_Input)
   return(Volt_Output);
 }
 /*******************************************************************************
-* Function Name  : Trig_Functions 
-* Description    : This function returns Cosine and Sine functions of the input 
-*                  angle
-* Input          : angle in s16 format
-* Output         : Cosine and Sine in s16 format
-* Return         : none.
+*函数名称:Trig_Functions
+*描述:这个函数返回输入的余弦和正弦函数角
+*输入:角度，s16格式
+*输出:余弦和正弦在s16格式
+*返回:none。
 *******************************************************************************/
 Trig_Components Trig_Functions(s16 hAngle)
 {

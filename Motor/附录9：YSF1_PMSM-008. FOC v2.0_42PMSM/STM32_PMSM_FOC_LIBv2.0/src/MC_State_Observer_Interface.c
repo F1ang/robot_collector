@@ -60,8 +60,8 @@ typedef enum
 static u16 bConvCounter;
 static s16 hAngle = 0;
 static u32 wTime = 0;
-static s32 wStart_Up_Freq = 0;
-static s32 wStart_Up_I;
+static s32 wStart_Up_Freq = 0;  // 启动频率
+static s32 wStart_Up_I;         // 启动电流
 static s16 hFreq_Inc;
 static s32 hI_Inc;
 
@@ -88,35 +88,35 @@ void STO_StartUp_Init(void);
 *******************************************************************************/
 void STO_StateObserverInterface_Init(void)
 {
- StateObserver_Const StateObserver_ConstStruct;
+ StateObserver_Const StateObserver_ConstStruct;	// 观测器计算
  
- StateObserver_ConstStruct.hC1 = C1;
+ StateObserver_ConstStruct.hC1 = C1;  					// (驱动版电阻/电感--采样)
  StateObserver_ConstStruct.hC3 = C3;
  StateObserver_ConstStruct.hC5 = C5; 
   
-   {
-    s16 htempk;
-    StateObserver_ConstStruct.hF3 = 1;
-    htempk = (s16)((100*65536)/(F2*2*PI));
-    while (htempk != 0)
-    {
-      htempk /=2;
-      StateObserver_ConstStruct.hF3 *=2;
-    }
-    StateObserver_ConstStruct.hC6 = (s16)((F2*StateObserver_ConstStruct.hF3*2*
-                                                                    PI)/65536);
-  }
+ {
+	s16 htempk;
+	StateObserver_ConstStruct.hF3 = 1;						// F1~F2参数放大倍数，F3
+	htempk = (s16)((100*65536)/(F2*2*PI));
+	while (htempk != 0)
+	{
+		htempk /=2;
+		StateObserver_ConstStruct.hF3 *=2;
+	}
+	StateObserver_ConstStruct.hC6 = (s16)((F2*StateObserver_ConstStruct.hF3*2*
+																																	PI)/65536);
+}
 
-#ifdef OBSERVER_GAIN_TUNING  
+#ifdef OBSERVER_GAIN_TUNING  										// 龙伯格观测器
   /* lines below for debug porpose*/
   StateObserver_ConstStruct.hC2 = C2;
   StateObserver_ConstStruct.hC4 = C4;
     
-  StateObserver_ConstStruct.hC2 = (s16)((F1*wK1_LO)/SAMPLING_FREQ);
+  StateObserver_ConstStruct.hC2 = (s16)((F1*wK1_LO)/SAMPLING_FREQ);  // K1 和 K2 是状态观测器矢量增益参数
   StateObserver_ConstStruct.hC4 = (s16)((((wK2_LO*MAX_CURRENT)/(MAX_BEMF_VOLTAGE
                                                        ))*F2)/(SAMPLING_FREQ));
-  StateObserver_ConstStruct.PLL_P = hPLL_P_Gain;
-  StateObserver_ConstStruct.PLL_I = hPLL_I_Gain;
+  StateObserver_ConstStruct.PLL_P = hPLL_P_Gain;      // 锁相环相位检测器增益的“先验”确定
+  StateObserver_ConstStruct.PLL_I = hPLL_I_Gain;      // 环路滤波器增益的“先验”
 #else
   StateObserver_ConstStruct.hC2 = C2;
   StateObserver_ConstStruct.hC4 = C4;
@@ -125,10 +125,10 @@ void STO_StateObserverInterface_Init(void)
 #endif    
   StateObserver_ConstStruct.hF1 = F1;
   StateObserver_ConstStruct.hF2 = F2;
-  StateObserver_ConstStruct.wMotorMaxSpeed_dpp = MOTOR_MAX_SPEED_DPP;
-  StateObserver_ConstStruct.hPercentageFactor = PERCENTAGE_FACTOR;
+  StateObserver_ConstStruct.wMotorMaxSpeed_dpp = MOTOR_MAX_SPEED_DPP;		// 最大机械转速
+  StateObserver_ConstStruct.hPercentageFactor = PERCENTAGE_FACTOR;			// 方差-均值-启动速度(速度测量方差的阈值--有效值)
   
-  STO_Gains_Init(&StateObserver_ConstStruct);
+  STO_Gains_Init(&StateObserver_ConstStruct);														// ST观测器
 }
   
 /*******************************************************************************
@@ -139,7 +139,7 @@ void STO_StateObserverInterface_Init(void)
 * Output : None
 * Return : boolean value: TRUE if speed is reliable, FALSE otherwise.
 *******************************************************************************/
-bool STO_Check_Speed_Reliability(void)
+bool STO_Check_Speed_Reliability(void)  // 速度可靠性 需要与采样的频率相同的频率调用
 {
   static u8 bCounter=0;
   bool baux;
@@ -173,13 +173,13 @@ bool STO_Check_Speed_Reliability(void)
 * Output : None
 * Return : boolean value: TRUE if algortihm converged, FALSE otherwise.
 *******************************************************************************/
-bool IsObserverConverged(void)
+bool IsObserverConverged(void)  // 观测器是否收敛(速度可靠性和估计速度是否在合理范围)
 { 
-  s16 hEstimatedSpeed;
-  s16 hUpperThreshold;
+  s16 hEstimatedSpeed;  // 估计速度
+  s16 hUpperThreshold;  // 启动速度阈值
   s16 hLowerThreshold;
 
-  hEstimatedSpeed = STO_Get_Speed_Hz();
+  hEstimatedSpeed = STO_Get_Speed_Hz();  // 获取估计的速度
   hEstimatedSpeed = (hEstimatedSpeed < 0 ? -hEstimatedSpeed : hEstimatedSpeed);  
   hUpperThreshold = ((wStart_Up_Freq/65536) * 160)/(POLE_PAIR_NUM * 16);
   hUpperThreshold = (hUpperThreshold < 0 ? -hUpperThreshold : hUpperThreshold);
@@ -200,7 +200,7 @@ bool IsObserverConverged(void)
           if (bConvCounter >= NB_CONSECUTIVE_TESTS)
           {
             // ...the algorithm converged.
-            return(TRUE);
+            return(TRUE);  // 观测器的速度在合理范围
           }
           else
           {
@@ -239,7 +239,7 @@ bool IsObserverConverged(void)
 * Output : None.
 * Return : hRotor_Speed_Hz.
 *******************************************************************************/
-s16 STO_Get_Speed_Hz(void)
+s16 STO_Get_Speed_Hz(void) // 转子电速度->转子机械速度(10hz单位)
 {
   return (s16)((STO_Get_Speed()* SAMPLING_FREQ * 10)/(65536*POLE_PAIR_NUM));
 }
@@ -251,7 +251,7 @@ s16 STO_Get_Speed_Hz(void)
 * Output : None.
 * Return : hRotor_El_Angle/pole pairs number.
 *******************************************************************************/
-s16 STO_Get_Mechanical_Angle(void)
+s16 STO_Get_Mechanical_Angle(void) // 转子电角度->转子机械角度(s16)
 {
   return ((s16)(STO_Get_Electrical_Angle()/POLE_PAIR_NUM));
 }
@@ -265,7 +265,7 @@ s16 STO_Get_Mechanical_Angle(void)
 * Output : details the output parameters.
 * Return : details the return value.
 *******************************************************************************/
-void STO_Start_Up(void)
+void STO_Start_Up(void)  // 启动：转子预定位、外同步加速、运行
 {
   s16 hAux;
 #ifdef NO_SPEED_SENSORS_ALIGNMENT
@@ -276,13 +276,13 @@ void STO_Start_Up(void)
   {
   case S_INIT:
     //Init Ramp-up variables
-    if (hSpeed_Reference >= 0)
+    if (hSpeed_Reference >= 0)  // 目标速度参考值
     {
-      hFreq_Inc = FREQ_INC;
-      hI_Inc = I_INC;
+      hFreq_Inc = FREQ_INC;     // 频率增量
+      hI_Inc = I_INC;           // 电流增量
       if (wTime == 0)
       {
-        wStart_Up_I = FIRST_I_STARTUP *1024;
+        wStart_Up_I = FIRST_I_STARTUP *1024; // 开始启动电流
       }
     }
     else
@@ -299,13 +299,15 @@ void STO_Start_Up(void)
     
   case ALIGNMENT:
 #ifdef NO_SPEED_SENSORS_ALIGNMENT
-    wAlignmentTbase++;
+    wAlignmentTbase++;                                    // 对准计数
     if(wAlignmentTbase <= SLESS_T_ALIGNMENT_PWM_STEPS)
-    {                  
+    {  
+      // 参考励磁Id = 目标对准电流相关值               
       hFlux_Reference = SLESS_I_ALIGNMENT * wAlignmentTbase / 
                                                     SLESS_T_ALIGNMENT_PWM_STEPS;               
       hTorque_Reference = 0;
       
+      /* FOC-SVPWM  */
       Stat_Curr_a_b = GET_PHASE_CURRENTS(); 
       Stat_Curr_alfa_beta = Clarke(Stat_Curr_a_b); 
       Stat_Curr_q_d = Park(Stat_Curr_alfa_beta, SLESS_ALIGNMENT_ANGLE_S16);  
@@ -327,14 +329,14 @@ void STO_Start_Up(void)
       /*Valpha and Vbeta finally drive the power stage*/ 
       CALC_SVPWM(Stat_Volt_alfa_beta);
     }
-    else
+    else  // 对准完成
     {
       wAlignmentTbase = 0;                
       Stat_Volt_q_d.qV_Component1 = Stat_Volt_q_d.qV_Component2 = 0;
-      hTorque_Reference = PID_TORQUE_REFERENCE;
+      hTorque_Reference = PID_TORQUE_REFERENCE;    // Iq、Id更新
       hFlux_Reference = PID_FLUX_REFERENCE;
       Start_Up_State = RAMP_UP;
-      hAngle = SLESS_ALIGNMENT_ANGLE_S16;      
+      hAngle = SLESS_ALIGNMENT_ANGLE_S16;           // 对准的角度  
     }
 #else
     Start_Up_State = RAMP_UP;    
@@ -343,32 +345,33 @@ void STO_Start_Up(void)
     
   case RAMP_UP:
     wTime ++;  
-    if (wTime <= I_STARTUP_PWM_STEPS)
+    if (wTime <= I_STARTUP_PWM_STEPS)           // 启动励磁频率/电流++
     {     
       wStart_Up_Freq += hFreq_Inc;
       wStart_Up_I += hI_Inc;
     }
-    else if (wTime <= FREQ_STARTUP_PWM_STEPS )
+    else if (wTime <= FREQ_STARTUP_PWM_STEPS ) // 电流不动，启动励磁频率++
     {
       wStart_Up_Freq += hFreq_Inc;
     }       
-    else
+    else                                       // 电流不动，启动励磁频率已最大，启动失败
     {
       MCL_SetFault(START_UP_FAILURE);
       //Re_initialize Start Up
       STO_StartUp_Init();
     }
     
+    // 启动电流，启动励磁频率
     //Add angle increment for ramp-up
     hAux = wStart_Up_Freq/65536;
-    hAngle = (s16)(hAngle + (s32)(65536/(SAMPLING_FREQ/hAux)));
+    hAngle = (s16)(hAngle + (s32)(65536/(SAMPLING_FREQ/hAux))); // 角度增量
         
     Stat_Curr_a_b = GET_PHASE_CURRENTS(); 
     Stat_Curr_alfa_beta = Clarke(Stat_Curr_a_b); 
-    Stat_Curr_q_d = Park(Stat_Curr_alfa_beta, hAngle);
+    Stat_Curr_q_d = Park(Stat_Curr_alfa_beta, hAngle);          // 启动励磁频率->Iq Id 和绝对角度
     
-    hAux = wStart_Up_I/1024;
-    hTorque_Reference = hAux;       
+    hAux = wStart_Up_I/1024;  
+    hTorque_Reference = hAux;                                   // 启动电流->参考转矩
     hFlux_Reference = 0;
            
     /*loads the Torque Regulator output reference voltage Vqs*/   
@@ -398,6 +401,7 @@ void STO_Start_Up(void)
       State = RUN;
       if ((wGlobal_Flags & SPEED_CONTROL) != SPEED_CONTROL)
       {
+        // 参考转矩和参考励磁
         hTorque_Reference = PID_TORQUE_REFERENCE;
         hFlux_Reference = PID_FLUX_REFERENCE;
       }      
@@ -434,7 +438,7 @@ void STO_StartUp_Init(void)
 * Return : details the return value.
 *******************************************************************************/
 #ifdef OBSERVER_GAIN_TUNING
-void STO_Obs_Gains_Update(void)
+void STO_Obs_Gains_Update(void)  // 修改PLL参数
 {
   StateObserver_GainsUpdate STO_GainsUpdateStruct;
 

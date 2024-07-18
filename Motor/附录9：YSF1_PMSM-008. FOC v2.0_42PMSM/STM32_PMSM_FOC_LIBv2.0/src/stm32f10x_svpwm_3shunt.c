@@ -38,7 +38,7 @@
 #define NB_CONVERSIONS 16
 
 #define SQRT_3		  1.732051
-#define T		        (PWM_PERIOD * 4)
+#define T		        (PWM_PERIOD * 4)   // 2500*4
 #define T_SQRT3     (u16)(T * SQRT_3)
 
 #define SECTOR_1	  (u32)1
@@ -112,10 +112,10 @@ void SVPWM_InjectedConvConfig(void);
 * Return         : None
 *******************************************************************************/
 /*******************************************************************************
-* Ãè    Êö: º¯ÊıÓÃÓÚÅäÖÃÎ¢´¦ÀíÆ÷ÍâÉèÀ´¶ÁÈ¡ÈıÏàµç×èÍØÆËµçÁ÷ºÍ²úÉú PWM¡£
-*           º¯Êı³õÊ¼»¯ NVIC¡¢ADC¡¢GPIO¡¢TIM1 ÍâÉè¡£
-*           ÌØ±ğ£¬ADC ºÍ TIM1 ÍâÉèÅäÖÃ³ÉÃ¿ PWM ×ª»»ÖÜÆÚÍ¬Ê±ÔËĞĞÁ½Â· A/D ×ª»»¡£
-* Ìá    Ê¾: ±ØĞëÔÚÖ÷º¯ÊıÖĞµ÷ÓÃ¡£
+* ??    ??: ??????????????????????????????????????????????? PWM??
+*           ????????? NVIC??ADC??GPIO??TIM1 ????
+*           ???ADC ?? TIM1 ???????Ã³?? PWM ???????????????Â· A/D ?????
+* ??    ?: ????????????????Ã¡?
 *******************************************************************************/
 void SVPWM_3ShuntInit(void)
 { 
@@ -159,12 +159,12 @@ void SVPWM_3ShuntInit(void)
   TIM_TimeBaseStructInit(&TIM1_TimeBaseStructure);
   /* Time Base configuration */
   TIM1_TimeBaseStructure.TIM_Prescaler = 0x0;
-  TIM1_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_CenterAligned1;
-  TIM1_TimeBaseStructure.TIM_Period = PWM_PERIOD;
+  TIM1_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_CenterAligned1; // ä¸­å¤®å¯¹é½çš„PWMæ¨¡å¼1
+  TIM1_TimeBaseStructure.TIM_Period = PWM_PERIOD; // PWMé¢‘ç‡->å®šæ—¶å™¨è®¡æ•°
   TIM1_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV2;
   
   // Initial condition is REP=0 to set the UPDATE only on the underflow
-  TIM1_TimeBaseStructure.TIM_RepetitionCounter = REP_RATE;
+  TIM1_TimeBaseStructure.TIM_RepetitionCounter = REP_RATE;                // é‡å¤è®¡æ•°ä½¿èƒ½ï¼Œä¸Š/ä¸‹æº¢UPDATAä¸­æ–­
   TIM_TimeBaseInit(TIM1, &TIM1_TimeBaseStructure);
   
   TIM_OCStructInit(&TIM1_OCInitStructure);
@@ -241,7 +241,8 @@ void SVPWM_3ShuntInit(void)
 
   TIM_BDTRConfig(TIM1, &TIM1_BDTRInitStructure);
 
-  TIM_SelectOutputTrigger(TIM1, TIM_TRGOSource_Update);
+  // å®šæ—¶å™¨çš„è®¡æ•°å™¨æº¢å‡ºæ—¶ï¼Œä¼šè§¦å‘ä¸€ä¸ªTRGOæ›´æ–°äº‹ä»¶
+  TIM_SelectOutputTrigger(TIM1, TIM_TRGOSource_Update); // TRGOè¾“å‡º
   
   TIM_ClearITPendingBit(TIM1, TIM_IT_Break);
   //TIM_ITConfig(TIM1, TIM_IT_Break,ENABLE);
@@ -250,14 +251,15 @@ void SVPWM_3ShuntInit(void)
   TIM_Cmd(TIM1, ENABLE);
   
   // Resynch to have the Update evend during Undeflow
-  TIM_GenerateEvent(TIM1, TIM_EventSource_Update);
+  // ç”Ÿæˆæ›´æ–°äº‹ä»¶->åŒæ­¥å¤–è®¾æ“ä½œä¸‹ä¸€ä¸ªå‘¨æœŸç»“æŸæ—¶è§¦å‘ç›¸åº”
+  TIM_GenerateEvent(TIM1, TIM_EventSource_Update);  
   
   // Clear Update Flag
   TIM_ClearFlag(TIM1, TIM_FLAG_Update);
   
-  TIM_ITConfig(TIM1, TIM_IT_Update, DISABLE);
+  TIM_ITConfig(TIM1, TIM_IT_Update, DISABLE); // ä¸Šæº¢æ›´æ–°ä¸­æ–­
   
-  TIM_ITConfig(TIM1, TIM_IT_CC4,DISABLE);
+  TIM_ITConfig(TIM1, TIM_IT_CC4,DISABLE);     // è¾“å‡ºæ¯”è¾ƒäº‹ä»¶ä¸­æ–­-ADC-SVPWM
      
   /* ADC1 registers reset ----------------------------------------------------*/
   ADC_DeInit(ADC1);
@@ -283,7 +285,7 @@ void SVPWM_3ShuntInit(void)
   ADC_StructInit(&ADC_InitStructure);  
   ADC_InitStructure.ADC_ScanConvMode = ENABLE;
   ADC_InitStructure.ADC_ContinuousConvMode = DISABLE;
-  ADC_InitStructure.ADC_ExternalTrigConv = ADC_ExternalTrigConv_None;
+  ADC_InitStructure.ADC_ExternalTrigConv = ADC_ExternalTrigConv_None;  // å¤–éƒ¨è§¦å‘
   ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Left;
   ADC_InitStructure.ADC_NbrOfChannel = 1;
   ADC_Init(ADC2, &ADC_InitStructure);
@@ -298,7 +300,7 @@ void SVPWM_3ShuntInit(void)
   {
   }
   
-  SVPWM_3ShuntCurrentReadingCalibration();
+  SVPWM_3ShuntCurrentReadingCalibration(); //å­˜å‚¨å¯¹åº”é›¶ç”µæµçš„ä¸‰è·¯æ¨¡æ‹Ÿç”µå‹ï¼Œç”¨äºè¡¥å¿è¿æ”¾äº§ç”Ÿçš„é›¶æ¼‚
     
   /* ADC2 Injected conversions configuration */ 
   ADC_InjectedSequencerLengthConfig(ADC2,2);
@@ -341,9 +343,9 @@ void SVPWM_3ShuntInit(void)
 * Return         : None
 *******************************************************************************/
 /*******************************************************************************
-* Ãè    Êö: º¯Êı¹¦ÄÜÓÃÓÚ´æ´¢¶ÔÓ¦ÁãµçÁ÷µÄÈıÂ·Ä£ÄâµçÑ¹£¬ÓÃÓÚ²¹³¥ÔË·Å²úÉúµÄÁãÆ¯¡£
-* Ìá    Ê¾: º¯Êı¶ÁÈ¡ÓÃÓÚµçÁ÷²É¼¯µÄ ADC Í¨µÀÄ£ÄâµçÑ¹Öµ¡£Òò´Ë±ØĞëÔÚ PWM Êä³öÇ°
-*           µ÷ÓÃ£¬ ÒÔ±ãÍ¨¹ıÄæ±äÆ÷µçÁ÷ÎªÁã¡£ ÕâĞ©Öµ´æ´¢ÔÚ Phase_x_Offset ±äÁ¿ÖĞ¡£
+* ??    ??: ?????????????????????????Â·???????????????????????????
+* ??    ?: ??????????????????? ADC ??????????????????? PWM ????
+*           ????? ?????????????????? ???????? Phase_x_Offset ???????
 *******************************************************************************/
 void SVPWM_3ShuntCurrentReadingCalibration(void)
 {
@@ -385,7 +387,7 @@ void SVPWM_3ShuntCurrentReadingCalibration(void)
     ADC_SoftwareStartInjectedConvCmd(ADC1,ENABLE);
   }
   
-  SVPWM_InjectedConvConfig();  
+  SVPWM_InjectedConvConfig();  // ADCé€šé“å’ŒITçš„è§¦å‘æ–¹å¼
 }
 
 
@@ -409,19 +411,19 @@ void SVPWM_InjectedConvConfig(void)
   ADC_InjectedChannelConfig(ADC1, BUS_VOLT_FDBK_CHANNEL, 2, SAMPLING_TIME_CK);
     
   /* ADC1 Injected conversions trigger is TIM1 TRGO */ 
-  ADC_ExternalTrigInjectedConvConfig(ADC1, ADC_ExternalTrigInjecConv_T1_TRGO); 
+  ADC_ExternalTrigInjectedConvConfig(ADC1, ADC_ExternalTrigInjecConv_T1_TRGO);  // å¤–éƒ¨PWM2 TRGOè§¦å‘
   
   ADC_ExternalTrigInjectedConvCmd(ADC2,ENABLE);
   
   /* Bus voltage protection initialization*/                            
   ADC_AnalogWatchdogCmd(ADC1,ADC_AnalogWatchdog_SingleInjecEnable);
   ADC_AnalogWatchdogSingleChannelConfig(ADC1,BUS_VOLT_FDBK_CHANNEL);
-  ADC_AnalogWatchdogThresholdsConfig(ADC1, OVERVOLTAGE_THRESHOLD>>3,0x00);
+  ADC_AnalogWatchdogThresholdsConfig(ADC1, OVERVOLTAGE_THRESHOLD>>3,0x00);  // æ¨¡æ‹Ÿçœ‹ä»¬ç‹—ä½¿èƒ½
   
   
   /* ADC1 Injected group of conversions end and Analog Watchdog interrupts
                                                                      enabling */
-  ADC_ITConfig(ADC1, ADC_IT_JEOC | ADC_IT_AWD, ENABLE);
+  ADC_ITConfig(ADC1, ADC_IT_JEOC | ADC_IT_AWD, ENABLE); // æ³¨å…¥ç»„è½¬æ¢å®Œæˆä¸­æ–­å’Œ ADC çœ‹é—¨ç‹—ä¸­æ–­
 }
 
 /*******************************************************************************
@@ -434,10 +436,12 @@ void SVPWM_InjectedConvConfig(void)
 * Return         : None
 *******************************************************************************/
 /*******************************************************************************
-* Ãè    Êö: º¯Êı´ÓA/D×ª»»ÍâÉè»ñµÃµÄµçÁ÷Öµ¿ªÊ¼¼ÆËãq1.15¸ñÊ½ÖĞAÏàºÍBÏàµçÁ÷Öµ¡£
-* Ìá    Ê¾: ÎªÁËÈ¡µÃq1.15¸ñÊ½µÄµçÁ÷Öµ£¬µ±¶ÁÈ¡ÏàµçÁ÷A/D×ª»»ÖµÊ±£¬±ØĞë¼õÈ¥ÓëÆ¯ÒÆ
-*           ¶ÔÓ¦µÄÊı×ÖÁ¿¡£Òò´Ë£¬º¯Êı±ØĞëÔÚSVPWM_3ShuntCurrentReadingCalibration
-*           Ö®ºóµ÷ÓÃ¡£
+*å‡½æ•°åç§°:SVPWM_3ShuntGetPhaseCurrentValues
+*è¯´æ˜:æ­¤å‡½æ•°è®¡ç®—Aç›¸å’ŒBç›¸çš„ç”µæµå€¼    ä¸‹æ¡¥è‡‚æ‰“å¼€æ—¶ï¼Œåˆ†åˆ«Ia Ib Icé‡‡æ · 
+*q1.15æ ¼å¼ï¼Œä»A/Dè·å–çš„å€¼å¼€å§‹è½¬æ¢å™¨å¤–è®¾ã€‚
+*è¾“å…¥:æ— 
+*è¾“å‡º:Stat_Curr_a_b
+*è¿”å›:æ— 
 *******************************************************************************/
 Curr_Components SVPWM_3ShuntGetPhaseCurrentValues(void)
 {
@@ -558,28 +562,21 @@ Curr_Components SVPWM_3ShuntGetPhaseCurrentValues(void)
 }
 
 /*******************************************************************************
-* Function Name  : SVPWM_3ShuntCalcDutyCycles
-* Description    : Computes duty cycle values corresponding to the input value
-		   and configures the AD converter and TIM0 for next period 
-		   current reading conversion synchronization
-* Input          : Stat_Volt_alfa_beta
-* Output         : None
-* Return         : None
-*******************************************************************************/
-/*******************************************************************************
-* Ãè    Êö: ÔÚFOCËã·¨ÔËËãÖ®ºó£¬¼ÆËã¶¨×ÓĞÂµçÑ¹V¦ÁºÍV¦Â¡£º¯Êı¹¦ÄÜÊÇ´ÓÕâĞ©µçÑ¹Öµ¿ª
-*           Ê¼µÄÄæ±äÆ÷Ö§Â·×¼È·¼ÆËãÈı¸öÖÜÆÚ¡£²¢ÇÒ£¬Ò»µ©ÏÂÒ»´ÎPWMÖÜÆÚÈı¸öÖÜÆÚÒÑÖª£¬
-*           º¯ÊıÉèÖÃÍ¨µÀ4Êä³öÓëÓÃÓÚÉèÖÃÏÂÒ»´ÎµçÁ÷¶ÁÈ¡µÄ²ÉÑùµãµÄ¼Ä´æÆ÷¶Ô±È¡£ÌØÊâ
-*           Çé¿öÏÂ£¬ÒÀ¾İÖÜÆÚÖµ£¬¼ÆËã²ÉÑùµã¡£
+*å‡½æ•°åç§°:SVPWM_3ShuntCalcDutyCycles
+*è¯´æ˜:è®¡ç®—è¾“å…¥å€¼å¯¹åº”çš„å ç©ºæ¯”å€¼ï¼Œå¹¶ä¸ºä¸‹ä¸€ä¸ªå‘¨æœŸé…ç½®ADè½¬æ¢å™¨å’ŒTIM0ä»¥è¿›è¡Œç”µæµè¯»å–è½¬æ¢åŒæ­¥
+*è¾“å…¥:Stat_Volt_alfa_beta
+*è¾“å‡º:æ— 
+*è¿”å›:æ— 
 *******************************************************************************/
 void SVPWM_3ShuntCalcDutyCycles (Volt_Components Stat_Volt_Input)
 {
    s32 wX, wY, wZ, wUAlpha, wUBeta;
    u16  hTimePhA=0, hTimePhB=0, hTimePhC=0, hTimePhD=0;
    u16  hDeltaDuty;
-    
-   wUAlpha = Stat_Volt_Input.qV_Component1 * T_SQRT3 ;
-   wUBeta = -(Stat_Volt_Input.qV_Component2 * T);
+
+   /* æ‰‡åŒºå…¬å¼ï¼šè°ƒåˆ¶æ¯”->Tä¸PWMçš„è®¡æ•°å€æ•°å…³ç³»ï¼Œå½¢æˆä½œç”¨æ—¶é—´->æœ‰æ•ˆçŸ¢é‡ä½œç”¨æ—¶é—´->U */ 
+   wUAlpha = Stat_Volt_Input.qV_Component1 * T_SQRT3 ;  // ä¸ºäº†è®¡ç®—X Y Z=>âˆš3*Ua-----ğ‘ˆğ›¼ = âˆš3 Ã— ğ‘‡ Ã— ğ‘‰ğ›¼
+   wUBeta = -(Stat_Volt_Input.qV_Component2 * T);       //               Up--------ğ‘ˆğ›½= âˆ’ğ‘‡ Ã— ğ‘‰ğ›½    
 
    wX = wUBeta;
    wY = (wUBeta + wUAlpha)/2;
@@ -625,18 +622,18 @@ void SVPWM_3ShuntCalcDutyCycles (Volt_Components Stat_Volt_Input)
   switch(bSector)
   {  
     case SECTOR_1:
-        hTimePhA = (T/8) + ((((T + wX) - wZ)/2)/131072);
+        hTimePhA = (T/8) + ((((T + wX) - wZ)/2)/131072);  // å¤„ç†å™¨çš„è¿ç®—ç²¾åº¦(q1.15ä¸q0)ï¼Œç»“æœä»ç„¶å¯å¯¹å…¬å¼14-48
         hTimePhB = hTimePhA + wZ/131072;
         hTimePhC = hTimePhB - wX/131072;
 
         // ADC Syncronization setting value             
-        if ((u16)(PWM_PERIOD-hTimePhA) > TW_AFTER)
+        if ((u16)(PWM_PERIOD-hTimePhA) > TW_AFTER)        // ä¸‰è§’æ³¢ä¸­å¿ƒå¯¹é½0~2500 2500~0  Aç›¸å¯¼é€š>DT+Tn
         {
-          hTimePhD = PWM_PERIOD - 1;
+          hTimePhD = PWM_PERIOD - 1;                      // å®špwmå‘¨æœŸï¼Œæ”¹å˜ccrè®¡æ•°ï¼Œé‡‡æ ·æ—¶é—´
         }
         else
         {
-          hDeltaDuty = (u16)(hTimePhA - hTimePhB);
+          hDeltaDuty = (u16)(hTimePhA - hTimePhB);        // A Bå¯¼é€šå·®
           
           // Definition of crossing point
           if (hDeltaDuty > (u16)(PWM_PERIOD-hTimePhA)*2) 
@@ -762,22 +759,22 @@ void SVPWM_3ShuntCalcDutyCycles (Volt_Components Stat_Volt_Input)
         hTimePhC = hTimePhB - wX/131072;
         
         // ADC Syncronization setting value
-        if ((u16)(PWM_PERIOD-hTimePhC) > TW_AFTER)
+        if ((u16)(PWM_PERIOD-hTimePhC) > TW_AFTER)  // æƒ…å†µ1ï¼šT_Aç›¸ä¸‹æ¡¥è‡‚>Tn+DT  ï¼Œæ›´æ­£C=A A=C B=B
         {
-          hTimePhD = PWM_PERIOD - 1;
+          hTimePhD = PWM_PERIOD - 1;                // æ­¤æ—¶ä¸Šæ¡¥è‡‚=ä¸‹æ¡¥è‡‚ï¼Œé‡‡æ ·ç‚¹åœ¨ä¸­å¿ƒå¯¹é½CCR(PWM_PERIOD-1)
         }
-        else
+        else                                        // æƒ…å†µ2/æƒ…å†µ3ï¼ŒT_Aç›¸ä¸‹æ¡¥è‡‚<Tn+DT   
         {
-          hDeltaDuty = (u16)(hTimePhC - hTimePhB);
+          hDeltaDuty = (u16)(hTimePhC - hTimePhB);  // Aå¯¼é€š - Bå¯¼é€š
           
           // Definition of crossing point
-          if (hDeltaDuty > (u16)(PWM_PERIOD-hTimePhC)*2)
+          if (hDeltaDuty > (u16)(PWM_PERIOD-hTimePhC)*2) // æƒ…å†µ3ï¼šç”±æƒ…å†µ2+æƒ…å†µ3=>Î”DutyAB>2*Î”DutyAï¼Œå› ä¸ºä¸€èˆ¬TR>TN   TW_BEFOREé‡‡æ ·
           {
-            hTimePhD = hTimePhC - TW_BEFORE; // Ts before Phase C 
+            hTimePhD = hTimePhC - TW_BEFORE;    // Ts before Phase C   
           }
-          else
+          else                                  // æƒ…å†µ2ï¼š Î”DutyAB<DT+TR+TS   
           {
-            hTimePhD = hTimePhC + TW_AFTER; // DT + Tn after Phase C
+            hTimePhD = hTimePhC + TW_AFTER;     // DT + Tn after Phase C // æƒ…å†µ2ï¼šé‡‡æ ·ç‚¹åœ¨Aç›¸ä¸‹æ¡¥è‡‚å¼€å§‹å¯¼é€š+DT+TN
             
             if (hTimePhD >= PWM_PERIOD)
             {
@@ -906,7 +903,7 @@ void SVPWM_3ShuntCalcDutyCycles (Volt_Components Stat_Volt_Input)
   TIM1->CCR1 = hTimePhA;
   TIM1->CCR2 = hTimePhB;
   TIM1->CCR3 = hTimePhC;
-  TIM1->CCR4 = hTimePhD; // To Syncronyze the ADC
+  TIM1->CCR4 = hTimePhD; // To Syncronyze the ADC   SVPWM==>
 }
 
 /*******************************************************************************
@@ -918,8 +915,11 @@ void SVPWM_3ShuntCalcDutyCycles (Volt_Components Stat_Volt_Input)
 * Return         : None
 *******************************************************************************/
 /*******************************************************************************
-* Ãè    Êö: ÓÃÓÚ³¬Ç°µçÁ÷¶ÁÈ¡µÄÆô¶¯ºÍ¹Ø±Õ¡£Èç¹û½ûÖ¹µçÁ÷³¬Ç°¶ÁÈ¡ÔòµçÁ÷¶ÁÈ¡ÓëÊÂ¼ş
-*           ¸üĞÂÍ¬Ê±Ö´ĞĞ¡£
+*å‡½æ•°åç§°:SVPWM_3ShuntAdvCurrentReading
+*è¯´æ˜:ç”¨äºå¼€å¯æˆ–å…³é—­é«˜çº§ç”µæµè¯»å–ï¼Œå¦‚æœç¦ç”¨ï¼Œå°†åœ¨æ›´æ–°äº‹ä»¶åæ‰§è¡Œå½“å‰è¯»å–ï¼Œæ˜¯å¦CC4äº‹ä»¶è§¦å‘ADCé‡‡é›†ç”µæµ
+*è¾“å…¥:cmd (ENABLEæˆ–DISABLE)
+*è¾“å‡º:æ— 
+*è¿”å›:æ— 
 *******************************************************************************/
 void SVPWM_3ShuntAdvCurrentReading(FunctionalState cmd)
 {
@@ -927,12 +927,12 @@ void SVPWM_3ShuntAdvCurrentReading(FunctionalState cmd)
   {
     // Enable ADC trigger sync with CC4
     //ADC_ExternalTrigInjectedConvConfig(ADC1, ADC_ExternalTrigInjecConv_T1_CC4);  
-    ADC1->CR2 |= 0x00001000;
+    ADC1->CR2 |= 0x00001000;                    // ADC1è§¦å‘æº å¤–éƒ¨è§¦å‘=CC4
     
     // Enable UPDATE ISR
     // Clear Update Flag
     TIM_ClearFlag(TIM1, TIM_FLAG_Update);
-    TIM_ITConfig(TIM1, TIM_IT_Update, ENABLE);
+    TIM_ITConfig(TIM1, TIM_IT_Update, ENABLE); // CC4çš„æ›´æ–°ä¸­æ–­è§¦å‘ADC1é‡‡é›†ç”µæµ
   }
   else
   {
@@ -956,9 +956,6 @@ void SVPWM_3ShuntAdvCurrentReading(FunctionalState cmd)
 * Output         : None
 * Return         : None
 *******************************************************************************/
-/*******************************************************************************
-* Ãè    Êö: ¸üĞÂISRÖ®ÄÚÖ´ĞĞ³ÌĞò¡£ÖØÖÃADCÍâ²¿Ê¹ÄÜ¡£
-*******************************************************************************/
 void SVPWMUpdateEvent(void)
 {
   // ReEnable EXT. ADC Triggering
@@ -978,8 +975,8 @@ void SVPWMUpdateEvent(void)
 * Return         : None
 *******************************************************************************/
 /*******************************************************************************
-* Ãè    Êö: ÔÚISR×ª»»Íê³ÉÖ®ÄÚÖ´ĞĞ³ÌĞò¡£¼ÆËã×ÜÏßµçÑ¹ºÍÎÂ¶È´«¸ĞÆ÷²É¼¯ºÍ¹Ø±ÕADCÍâ
-*           ²¿´¥·¢Ê¹ÄÜ¡£
+* ??    ??: ??ISR??????????????????????????????????????????ADC??
+*           ??????????
 *******************************************************************************/
 u8 SVPWMEOCEvent(void)
 {

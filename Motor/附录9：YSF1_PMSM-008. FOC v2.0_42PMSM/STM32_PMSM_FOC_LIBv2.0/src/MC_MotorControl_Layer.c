@@ -61,12 +61,11 @@ u16 h_ADCBusvolt;
 u16 h_ADCTemp;
   
 /*******************************************************************************
-* Function Name  : MCL_Init
-* Description    : This function implements the motor control initialization to 
-*                  be performed at each motor start-up 
-* Input          : None
-* Output         : None
-* Return         : None
+*函数名:MCL_Init
+*说明:此功能实现电机控制初始化，在每次电机启动时执行
+*输入:无
+*输出:无
+*返回:无
 *******************************************************************************/
 void MCL_Init(void)
 {

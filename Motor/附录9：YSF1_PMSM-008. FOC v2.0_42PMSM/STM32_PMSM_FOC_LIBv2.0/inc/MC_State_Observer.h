@@ -32,7 +32,8 @@
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
 
-void STO_Calc_Rotor_Angle(Volt_Components,Curr_Components,s16);
+// 调用频率与定子电流采样频率一致(FOC)、反电动势𝑒𝛼和𝑒𝛽=>PLL=>速度/角度
+void STO_Calc_Rotor_Angle(Volt_Components,Curr_Components,s16); 
 void STO_Calc_Speed(void);
 s16 STO_Get_Electrical_Angle(void);
 s16 STO_Get_Speed(void);

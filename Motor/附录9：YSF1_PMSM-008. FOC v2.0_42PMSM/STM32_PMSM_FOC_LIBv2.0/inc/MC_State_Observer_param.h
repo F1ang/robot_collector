@@ -100,9 +100,9 @@ FINAL_START_UP_SPEED |              /
 #define SLESS_T_ALIGNMENT           (u16) 700    // Alignment time in ms
 /* Ö¸¶¨Ê¸Á¿µÄ·½Ïò */
 #define SLESS_ALIGNMENT_ANGLE       (u16) 90 //Degrees [0..359]  
-//  90° <-> Ia = SLESS_I_ALIGNMENT, Ib = Ic =-SLESS_I_ALIGNMENT/2) 
+//  90? <-> Ia = SLESS_I_ALIGNMENT, Ib = Ic =-SLESS_I_ALIGNMENT/2) 
 
-// With SLESS_ALIGNMENT_ANGLE equal to 90° final alignment 
+// With SLESS_ALIGNMENT_ANGLE equal to 90? final alignment 
 // phase current = (SLESS_I_ALIGNMENT * 1.65/ Av)/(32767 * Rshunt)  
 // being Av the voltage gain between Rshunt and A/D input
 /* ¶¨Òå²Î¿¼ Id µÄ×îÖÕÖµ´óÐ¡ */
@@ -114,7 +114,7 @@ FINAL_START_UP_SPEED |              /
 /**************************** Í³¼Æ²ÎÊý *************************************/
 
 //Threshold for the speed measurement variance.
-/* ²ÎÊýÉè¶¨ËÙ¶È²âÁ¿·½²îµÄÃÅ¼÷ */
+/* ²ÎÊýÉè¶¨ËÙ¶È²âÁ¿·½²îµÄÃÅ¼÷£º·½²îÊÇÀëÆ½¾ùÖµµÄÆ«Àë³Ì¶È */
 /* ¸ù ¾Ý ¹« Ê½ £º¦Ò^2 >= ¦Ì^2*VARIANCE _THRESHOLD £¬µ±·½²î¹Û²âËÙ¶È·½²î´óÓÚÆ½¾ù */
 /* ÖµµÄ°Ù·Ö±È£¬¾ÍÈÏÎªÎÞ´«¸ÐËã·¨ÊÇ²»¿É£¬¦ÒºÍ¦Ì·Ö±ðÊÇ·½²îºÍ¹Û²âËÙ¶ÈÆ½¾ùÖµ£¨·½²î  */
 /* VARIANCE_THRESHOLDÊÇ0.0625¼´Æ½¾ùÖµµÄ°Ù·Ö±ÈÎª 25%£©¡£VARIANCE_THRESHOLDµÄ²Î  */

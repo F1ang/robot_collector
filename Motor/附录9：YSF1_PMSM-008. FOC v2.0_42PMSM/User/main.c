@@ -61,11 +61,11 @@ void GPIO_Configuration(void)
   */
 int main(void)
 {
-  NVIC_PriorityGroupConfig(NVIC_PriorityGroup_3);
-  GPIO_Configuration();
+  NVIC_PriorityGroupConfig(NVIC_PriorityGroup_3);   // NVIC3
+  GPIO_Configuration();                             // PA8~PA10
   
 #ifdef THREE_SHUNT  
-  SVPWM_3ShuntInit();
+  SVPWM_3ShuntInit();                               // 通过三相分流电阻进行完成电流采样
 #elif defined ICS_SENSORS
   SVPWM_IcsInit();
 #elif defined SINGLE_SHUNT
@@ -98,7 +98,7 @@ int main(void)
   MCDAC_Init();
 #endif
 
-  TB_Init();
+  TB_Init();        //系统滴答定时器
   
   PID_Init(&PID_Torque_InitStructure, &PID_Flux_InitStructure, &PID_Speed_InitStructure);
 
@@ -132,7 +132,7 @@ int main(void)
       break;
       
       case INIT:
-        MCL_Init();
+        MCL_Init();  // 电机控制层初始化
         TB_Set_StartUp_Timeout(3000);
         State = START; 
       break;

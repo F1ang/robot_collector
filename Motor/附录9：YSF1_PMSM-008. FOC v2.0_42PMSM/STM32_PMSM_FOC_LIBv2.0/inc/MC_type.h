@@ -47,21 +47,22 @@ typedef struct
   s16 hSin;
 } Trig_Components;
 
+// K1 和 K2 是状态观测器矢量增益参数
 typedef struct
 {
  s16 hC1;
  s16 hC2;
  s16 hC3;
  s16 hC4;
- s16 hC5;
+ s16 hC5;                     // 硬件驱动板和电机的参数
  s16 hC6;
- s16 hF1;
- s16 hF2;
+ s16 hF1;                     // 放大倍数
+ s16 hF2;                     // 放大倍数
  s16 hF3;
  s16 PLL_P;
  s16 PLL_I;
- s32 wMotorMaxSpeed_dpp;
- u16 hPercentageFactor;
+ s32 wMotorMaxSpeed_dpp;      // 电机最大转速
+ u16 hPercentageFactor;       // 启动速度百分百阈值
 } StateObserver_Const; 
 
 typedef struct
