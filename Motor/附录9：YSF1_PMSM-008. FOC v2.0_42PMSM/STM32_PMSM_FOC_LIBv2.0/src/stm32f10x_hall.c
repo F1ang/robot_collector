@@ -990,7 +990,7 @@ void TIM4_IRQHandler(void)
       {
          wCaptBuf /= 2;		// Make it fit 16-bit using virtual prescaler
          // Reduced resolution not a problem since result just slightly < 16-bit
-         hPrscBuf = (hPrscBuf * 2) + 1;
+         hPrscBuf = (hPrscBuf * 2) + 1;       // ????psc
          if (hPrscBuf > U16_MAX/2) // Avoid Prsc overflow
          {
             hPrscBuf = U16_MAX;
