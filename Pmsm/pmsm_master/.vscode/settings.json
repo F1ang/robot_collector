@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "bsp_config.h": "c",
+        "core_cm3.h": "c",
+        "bsp_motor.h": "c"
+    }
+}
