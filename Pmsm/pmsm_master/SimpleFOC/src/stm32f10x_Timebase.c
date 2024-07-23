@@ -222,8 +222,9 @@ bool TB_StartUp_Timeout_IsElapsed(void)
 * Output         : None
 * Return         : None
 *******************************************************************************/
-void SysTick_Handler(void)   // 滴答系统计时
+void SysTick_Handler(void)   // 滴答系统计时 500us
 { 
+  key_delay++;
   if (hTimebase_500us != 0)  
   {
     hTimebase_500us --;
@@ -250,10 +251,10 @@ void SysTick_Handler(void)   // 滴答系统计时
   }
   else
   {
-    hSpeedMeas_Timebase_500us = SPEED_SAMPLING_TIME;            // 3us速度采样计算
+    hSpeedMeas_Timebase_500us = SPEED_SAMPLING_TIME;            // 2ms速度采样计算
     
-    STO_Calc_Speed();      
-    STO_Obs_Gains_Update();  
+    // STO_Calc_Speed();      
+    // STO_Obs_Gains_Update();  
   }
 
   

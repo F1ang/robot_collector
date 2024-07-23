@@ -12,15 +12,15 @@ int main(void)
 	TB_Init();        									// 系统滴答定时器
 	PID_Init(&PID_Torque_InitStructure, &PID_Flux_InitStructure, &PID_Speed_InitStructure); // 设定速度hSpeed_Reference
 
-	// KEYS_Init();
+	Key_Init();
 	MCL_Init_Arrays(); 									// 温度和VBUS平均值
 
-	State = INIT;
-	hSpeed_Reference = 1000;
+//	State = INIT;
+//	hSpeed_Reference = 1000;
 	
 	while(1) 
 	{		
-		// KEYS_process(); 
+		Key_Process_Handler();
 		switch (State)
 		{
 			case IDLE:    // Idle state   

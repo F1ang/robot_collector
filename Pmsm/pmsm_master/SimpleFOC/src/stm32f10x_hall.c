@@ -103,8 +103,8 @@ volatile bool RatioInc;
 volatile bool DoRollingAverage;
 volatile bool InitRollingAverage;
 volatile bool HallTimeOut;
-static s16 hElectrical_Angle;     // ???
-static s16 hRotorFreq_dpp;        // ?????dpp
+static s16 hElectrical_Angle;     // µç½Ç¶È
+static s16 hRotorFreq_dpp;        // ×ª×ÓµçÆµÂÊdpp
 #if (defined HALL_SENSORS || defined VIEW_HALL_FEEDBACK)
 static s8 bSpeed;
 #endif
@@ -267,7 +267,7 @@ void HALL_InitHallMeasure( void )
 * Warning : Maximum expectable accuracy depends on CKTIM: 72MHz will give the
 * 	    best results.
 *******************************************************************************/
-s16 HALL_GetSpeed ( void )  // ???????????0.1Hz
+s16 HALL_GetSpeed ( void )  // ½ÇËÙ¶È0.1Hz
 { 
   s32 wAux;
   
@@ -299,7 +299,7 @@ s16 HALL_GetSpeed ( void )  // ???????????0.1Hz
 * Warning : Maximum expectable accuracy depends on CKTIM: 72MHz will give the
 * 	    best results.
 *******************************************************************************/
-s16 HALL_GetRotorFreq ( void )  // ?????
+s16 HALL_GetRotorFreq ( void )  // ×ª×ÓµçÆµÂÊ
 {
    PeriodMeas_s PeriodMeasAux;
 
@@ -546,7 +546,7 @@ s16 HALL_GetElectricalAngle(void)
 }
 
 /**
- * @description: ??FOC??????????->hElectrical_Angle
+ * @description: FOC_Model>hElectrical_Angle
  * @return {None}
  */
 void HALL_IncElectricalAngle(void)
@@ -568,7 +568,7 @@ void HALL_IncElectricalAngle(void)
 * ROUTINE Name : HALL_Init_Electrical_Angle
 *
 * Description : Read the logic level of the three Hall sensor and individuates   
-*               this way the position of the rotor (+/- 30°). Electrical angle 
+*               this way the position of the rotor (+/- 30?). Electrical angle 
 *               variable is then initialized
 *
 * Input       : None
@@ -576,7 +576,7 @@ void HALL_IncElectricalAngle(void)
 * Return      : Electrical angle s16 format
 *
 *******************************************************************************/
-void HALL_Init_Electrical_Angle(void)  // HALL120°??
+void HALL_Init_Electrical_Angle(void)  // HALL 120
 {
  switch(ReadHallState())
  {
@@ -646,9 +646,9 @@ void HALL_Init_Electrical_Angle(void)  // HALL120°??
 * Return         : None (Interrupt Service routine)
 *******************************************************************************/
 /**
- * @description: TI1???????????
- * @param {?????TI1->????CC1???PSC???
- * PSC??->????->?65535??->??????????TI1->??????CC1->????}
+ * @description: TI1->²¶»ñÂö³å¼ÆÊýCC1->²¶»ñÖÐ¶Ï
+ * @param {TI1->²¶»ñÂö³å¼ÆÊýCC1->²¶»ñÖÐ¶Ï
+ * PSC¾ö¶¨->¼ÆÊýÆµÂÊ->³¬65535Òç³ö->!ÔØ²¨¼ÆÊýÓë¼ÆÊýÆµÂÊ!}
  * @return {*}
  */
 void TIM3_IRQHandler(void)
@@ -661,7 +661,7 @@ void TIM3_IRQHandler(void)
   {
     // A capture event generated this interrupt
     bPrevHallState = bHallState;
-    bHallState = ReadHallState();               // ??
+    bHallState = ReadHallState();               // »ñÈ¡HALLÎ»ÖÃ
     switch(bHallState)
     {
       case STATE_5:
@@ -791,7 +791,7 @@ void TIM3_IRQHandler(void)
    //Timeout Flag is cleared when receiving an IC
    HALL_ClrTimeOut();
    
-   // ??PSC->????->?????65535
+   // PSC¾ö¶¨->¼ÆÊýÆµÂÊ->³¬65535Òç³ö
    // Store the latest speed acquisition
    if (bGP1_OVF_Counter != 0)	// There was counter overflow before capture
    {
@@ -898,10 +898,10 @@ void TIM3_IRQHandler(void)
     }
    
   //Update Rotor Frequency Computation
-   hRotorFreq_dpp = HALL_GetRotorFreq();   // ?????dpp
+   hRotorFreq_dpp = HALL_GetRotorFreq();   // ×ª×ÓµçÆµÂÊdpp
   
   }
-  else            // ???????????
+  else            // ¼ÆÊýÆµÂÊ¹ý¿ì->Òç³ö
   {
     TIM_ClearFlag(HALL_TIMER, TIM_FLAG_Update);  
   	// an update event occured for this interrupt request generation
