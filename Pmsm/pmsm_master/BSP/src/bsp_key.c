@@ -1,3 +1,7 @@
+/*
+ * @Welcome: Hacker
+ * @Description: Excellent Day
+ */
 #include "bsp_key.h"
 
 volatile u16 key_delay = 0;
