@@ -15,8 +15,8 @@ int main(void)
 	Key_Init();
 	MCL_Init_Arrays(); 									// 温度和VBUS平均值
 
-//	State = INIT;
-//	hSpeed_Reference = 1000;
+	State = INIT;
+	//hSpeed_Reference = 1000;
 	
 	while(1) 
 	{		
@@ -37,14 +37,14 @@ int main(void)
 			break;
 			
 			case RUN:             
-				if(HALL_IsTimedOut())
-				{
-					MCL_SetFault(SPEED_FEEDBACK);
-				} 
-				if (HALL_GetSpeed() == HALL_MAX_SPEED)
-				{
-					MCL_SetFault(SPEED_FEEDBACK);
-				} 
+//				if(HALL_IsTimedOut())
+//				{
+//					MCL_SetFault(SPEED_FEEDBACK);
+//				} 
+//				if (HALL_GetSpeed() == HALL_MAX_SPEED)
+//				{
+//					MCL_SetFault(SPEED_FEEDBACK);
+//				} 
 		
 			break;  
 		

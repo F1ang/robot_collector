@@ -47,7 +47,7 @@
 /* Define here in degrees the electrical phase shift between the low to high
 transition of signal H1 and the maximum of the Bemf induced on phase A */
 
-#define	HALL_PHASE_SHIFT (s16) 120
+#define	HALL_PHASE_SHIFT (s16) 120  // 同步电角度
 
 /* APPLICATION SPEED DOMAIN AND ERROR/RANGE CHECKING -------------------------*/
 

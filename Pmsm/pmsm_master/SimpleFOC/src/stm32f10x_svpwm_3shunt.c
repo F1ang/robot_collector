@@ -158,7 +158,9 @@ void SVPWM_3ShuntInit(void)
   /* Time Base configuration */
   TIM1_TimeBaseStructure.TIM_Prescaler = 0x0;
   TIM1_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_CenterAligned1;
-  TIM1_TimeBaseStructure.TIM_Period = PWM_PERIOD;
+
+   // 计数频率=1/36M,载波频率=36M/(PWM_PERIOD*2),采样频率=2*载波频率=电流环频率(开关频率)
+  TIM1_TimeBaseStructure.TIM_Period = PWM_PERIOD;        
   TIM1_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV2;
   
   // Initial condition is REP=0 to set the UPDATE only on the underflow
@@ -210,7 +212,7 @@ void SVPWM_3ShuntInit(void)
   TIM1_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM2;  
   TIM1_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable; 
   TIM1_OCInitStructure.TIM_OutputNState = TIM_OutputNState_Disable;                  
-  TIM1_OCInitStructure.TIM_Pulse = PWM_PERIOD - 1; 
+  TIM1_OCInitStructure.TIM_Pulse = PWM_PERIOD - 1; // CCR4
   
   TIM1_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High; 
   TIM1_OCInitStructure.TIM_OCNPolarity = TIM_OCNPolarity_Low;         
@@ -269,7 +271,7 @@ void SVPWM_3ShuntInit(void)
   
   /* ADC1 configuration ------------------------------------------------------*/
   ADC_StructInit(&ADC_InitStructure);
-  ADC_InitStructure.ADC_Mode = ADC_Mode_InjecSimult;
+  ADC_InitStructure.ADC_Mode = ADC_Mode_InjecSimult;      // 注入同步转换(双ADC采样)
   ADC_InitStructure.ADC_ScanConvMode = ENABLE;
   ADC_InitStructure.ADC_ContinuousConvMode = DISABLE;
   ADC_InitStructure.ADC_ExternalTrigConv = ADC_ExternalTrigConv_None;

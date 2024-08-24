@@ -45,7 +45,7 @@ typedef signed long long s64;
 void PID_Init (PID_Struct_t *PID_Torque, PID_Struct_t *PID_Flux, 
                                                         PID_Struct_t *PID_Speed)
 {
-  hTorque_Reference = PID_TORQUE_REFERENCE;
+  hTorque_Reference = PID_TORQUE_REFERENCE;             // Iq_ref=x
 
   PID_Torque->hKp_Gain    = PID_TORQUE_KP_DEFAULT;
   PID_Torque->hKp_Divisor = TF_KPDIV;  
@@ -73,7 +73,7 @@ void PID_Init (PID_Struct_t *PID_Torque, PID_Struct_t *PID_Flux,
 
   PID_Flux->wIntegral = 0;  // reset integral value 
 
-  hFlux_Reference = PID_FLUX_REFERENCE;
+  hFlux_Reference = PID_FLUX_REFERENCE;                 // Id_ref=0
 
   PID_Flux->hKp_Gain    = PID_FLUX_KP_DEFAULT;
   PID_Flux->hKp_Divisor = TF_KPDIV;  
@@ -102,7 +102,7 @@ void PID_Init (PID_Struct_t *PID_Torque, PID_Struct_t *PID_Flux,
 
   PID_Speed->wIntegral = 0;  // reset integral value 
 
-  hSpeed_Reference = PID_SPEED_REFERENCE;
+  hSpeed_Reference = PID_SPEED_REFERENCE;               // 1000/6
 
   PID_Speed->hKp_Gain    = PID_SPEED_KP_DEFAULT;
   PID_Speed->hKp_Divisor = SP_KPDIV;  

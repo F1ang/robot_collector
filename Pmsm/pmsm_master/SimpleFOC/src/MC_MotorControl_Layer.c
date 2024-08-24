@@ -25,7 +25,7 @@
 #include "stm32f10x.h"
 #include "stm32f10x_MClib.h"
 #include "MC_Globals.h"
-
+#include "stm32f10x_encoder.h"
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 #define BRK_GPIO GPIOG
@@ -59,7 +59,39 @@ static u32 w_Temp_Average;
 
 u16 h_ADCBusvolt;
 u16 h_ADCTemp;
+
+/**
+ * @brief: id=x,iq=0,theta预定位
+ * @return {None}
+ */
+static void Start_Up(void)
+{
+  s16 iq_ref_ref = 0;
+  s16 id_ref_ref = 2000;
+
+  /*loads the Torque Regulator output reference voltage Vqs*/  
+  Stat_Volt_q_d.qV_Component1 = PID_Regulator(iq_ref_ref, 
+                        Stat_Curr_q_d.qI_Component1, &PID_Torque_InitStructure);    
+
   
+  /*loads the Flux Regulator output reference voltage Vds*/
+  Stat_Volt_q_d.qV_Component2 = PID_Regulator(id_ref_ref, 
+                          Stat_Curr_q_d.qI_Component2, &PID_Flux_InitStructure);  
+  
+  //circle limitation
+  RevPark_Circle_Limitation(); // 圆限制，防止过调制
+ 
+  /*Performs the Reverse Park transformation,
+  i.e transforms stator voltages Vqs and Vds into Valpha and Vbeta on a 
+  stationary reference frame*/
+	
+  Stat_Volt_alfa_beta = Rev_Park_StartUp(Stat_Volt_q_d);
+
+  /*Valpha and Vbeta finally drive the power stage*/ 
+  CALC_SVPWM(Stat_Volt_alfa_beta); // 计算ccr1 ccr2 ccr3的导通时刻(作用时间)，ccr4的采样值
+
+}
+
 /**
  * @description: 电机标定参数与ADC采样标定
  * @param {PID参数复位；Iq、Id初始化；HALL定位电角度；电流标定值；预定位；CC4的update触发ADC采样电流}
@@ -87,10 +119,12 @@ void MCL_Init(void)
     /* Main PWM Output Enable */
     TIM_CtrlPWMOutputs(TIM1,ENABLE);
   
-    while(!TB_StartUp_Timeout_IsElapsed())
+    Start_Up();
+		//ENC_Start_Up();
+    while(!TB_StartUp_Timeout_IsElapsed())      // hStart_Up_TimeLeft_500us阻塞延时
     {
     }  
-    SVPWM_3ShuntAdvCurrentReading(ENABLE);      // CC4的update触发ADC采样电流
+    SVPWM_3ShuntAdvCurrentReading(DISABLE);      // CC4的update触发ADC采样电流
 }
 
 

@@ -497,6 +497,41 @@ Volt_Components Rev_Park(Volt_Components Volt_Input)
  
   return(Volt_Output);
 }
+
+Volt_Components Rev_Park_StartUp(Volt_Components Volt_Input)
+{ 	
+  s32 qValpha_tmp1,qValpha_tmp2,qVbeta_tmp1,qVbeta_tmp2;
+  s16 qValpha_1,qValpha_2,qVbeta_1,qVbeta_2;
+  Volt_Components Volt_Output;
+   
+  Vector_Components = Trig_Functions(0);
+
+  //No overflow guaranteed
+  qValpha_tmp1 = Volt_Input.qV_Component1 * Vector_Components.hCos;
+  qValpha_tmp1 /= 32768;
+  
+  qValpha_tmp2 = Volt_Input.qV_Component2 * Vector_Components.hSin;
+  qValpha_tmp2 /= 32768;
+		
+  qValpha_1 = (s16)(qValpha_tmp1);		
+  qValpha_2 = (s16)(qValpha_tmp2);			
+
+  Volt_Output.qV_Component1 = ((qValpha_1)+(qValpha_2));
+ 
+  
+  qVbeta_tmp1 = Volt_Input.qV_Component1 * Vector_Components.hSin;
+  qVbeta_tmp1 /= 32768;
+  
+  qVbeta_tmp2 = Volt_Input.qV_Component2 * Vector_Components.hCos;
+  qVbeta_tmp2 /= 32768;
+
+  qVbeta_1 = (s16)(qVbeta_tmp1);				
+  qVbeta_2 = (s16)(qVbeta_tmp2);
+   				
+  Volt_Output.qV_Component2 = -(qVbeta_1)+(qVbeta_2);
+ 
+  return(Volt_Output);
+}
 /*******************************************************************************
 * Function Name  : Trig_Functions 
 * Description    : This function returns Cosine and Sine functions of the input 

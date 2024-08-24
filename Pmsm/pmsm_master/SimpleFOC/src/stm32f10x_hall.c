@@ -118,7 +118,7 @@ void HALL_ClrCaptCounter(void);
 u8  ReadHallState(void); 
 
 /**
- * @description: HALL?????TIM3
+ * @description: HALL TIM3
  * @param {PC6 PC7 PC8}
  * @return {None}
  */
@@ -225,6 +225,7 @@ void HALL_InitHallMeasure( void )
    hCaptCounter = 0;
    bGP1_OVF_Counter = 0;
 
+    // 初始化捕获值、分频系数PSC、方向数组 
    for (bSpeedFIFO_Index=0; bSpeedFIFO_Index < HALL_SPEED_FIFO_SIZE; 
                                                              bSpeedFIFO_Index++)
    {
@@ -546,7 +547,8 @@ s16 HALL_GetElectricalAngle(void)
 }
 
 /**
- * @description: FOC_Model>hElectrical_Angle
+ * @description: FOC_Model->hElectrical_Angle    
+ * 转子电角度:Hall状态机的变化时刻，校正;任意时刻，FOC周期:转子电频率->转子电角度
  * @return {None}
  */
 void HALL_IncElectricalAngle(void)
@@ -576,6 +578,10 @@ void HALL_IncElectricalAngle(void)
 * Return      : Electrical angle s16 format
 *
 *******************************************************************************/
+/**
+ * @brief: S16_PHASE_SHIFT:同步电角度(电角度0度校准)    
+ * @return {None}
+ */
 void HALL_Init_Electrical_Angle(void)  // HALL 120
 {
  switch(ReadHallState())
@@ -912,8 +918,8 @@ void TIM3_IRQHandler(void)
   
     if (bGP1_OVF_Counter >= HALL_MAX_OVERFLOWS)
     {
-       HallTimeOut = TRUE;
-       hRotorFreq_dpp = 0;
+      HallTimeOut = TRUE;
+      hRotorFreq_dpp = 0;
     }    
   }
 }

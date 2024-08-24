@@ -109,6 +109,7 @@ Curr_Components Clarke(Curr_Components);
 Curr_Components Park(Curr_Components,s16);
 void RevPark_Circle_Limitation(void);
 Volt_Components Rev_Park(Volt_Components Volt_Input); 
+Volt_Components Rev_Park_StartUp(Volt_Components Volt_Input); 
 Trig_Components Trig_Functions(s16 hAngle);
 
 #endif //__MC_CLARKE_PARK_H
