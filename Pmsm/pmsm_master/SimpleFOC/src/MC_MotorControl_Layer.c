@@ -118,13 +118,12 @@ void MCL_Init(void)
     
     /* Main PWM Output Enable */
     TIM_CtrlPWMOutputs(TIM1,ENABLE);
-  
-    Start_Up();
-		//ENC_Start_Up();
+		
+    // Start_Up();
     while(!TB_StartUp_Timeout_IsElapsed())      // hStart_Up_TimeLeft_500us阻塞延时
     {
     }  
-    SVPWM_3ShuntAdvCurrentReading(DISABLE);      // CC4的update触发ADC采样电流
+    SVPWM_3ShuntAdvCurrentReading(ENABLE);      // CC4的update触发ADC采样电流
 }
 
 

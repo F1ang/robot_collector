@@ -462,6 +462,7 @@ bool ENC_ErrorOnFeedback(void)
 * Output : details the output parameters.
 * Return : details the return value.
 *******************************************************************************/
+#define ENCODER
 void ENC_Start_Up(void)
 {
   static u32 wTimebase=0;

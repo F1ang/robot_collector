@@ -16,10 +16,16 @@ int main(void)
 	MCL_Init_Arrays(); 									// 温度和VBUS平均值
 
 	State = INIT;
-	//hSpeed_Reference = 1000;
+	hSpeed_Reference = 1000;
+	
+	MCL_Init();  // 电机控制层初始化
+	do {
+		ENC_Start_Up();
+	}while(State == INIT);
 	
 	while(1) 
 	{		
+		
 		Key_Process_Handler();
 		switch (State)
 		{
@@ -27,9 +33,9 @@ int main(void)
 			break;
 		
 			case INIT:
-				MCL_Init();  // 电机控制层初始化
-				TB_Set_StartUp_Timeout(3000);
-				State = START; 
+				//MCL_Init();  // 电机控制层初始化
+				//TB_Set_StartUp_Timeout(20);
+				//State = START; 
 			break;
 			
 			case START:  
