@@ -99,6 +99,7 @@ static void Start_Up(void)
  */
 void MCL_Init(void)  
 {
+#ifdef HALL_SENSORS
     // reset PID's integral values
     MCL_Reset_PID_IntegralTerms();    // integral values=0
     FOC_Init();                       // Iq、Id初始化
@@ -124,6 +125,29 @@ void MCL_Init(void)
     {
     }  
     SVPWM_3ShuntAdvCurrentReading(ENABLE);      // CC4的update触发ADC采样电流
+#elif defined NO_SPEED_SENSORS
+    MCL_Reset_PID_IntegralTerms();
+    FOC_Init();
+    STO_Init();
+
+    SVPWM_3ShuntCurrentReadingCalibration();
+    Stat_Volt_alfa_beta.qV_Component1 = 0;
+    Stat_Volt_alfa_beta.qV_Component2 = 0;             
+    CALC_SVPWM(Stat_Volt_alfa_beta);
+    hTorque_Reference = PID_TORQUE_REFERENCE;   
+ 
+    //It generates for 2 msec a 50% duty cycle on the three phases to load Boot 
+    //capacitance of high side drivers
+    TB_Set_StartUp_Timeout(4); 
+    
+    /* Main PWM Output Enable */
+    TIM_CtrlPWMOutputs(TIM1,ENABLE);
+  
+    while(!TB_StartUp_Timeout_IsElapsed())
+    {
+    } 
+    SVPWM_3ShuntAdvCurrentReading(ENABLE);
+#endif
 }
 
 

@@ -91,6 +91,7 @@ void FOC_Init (void)
  */
 void FOC_Model(void)
 {
+#ifdef HALL_SENSORS
   HALL_IncElectricalAngle();                          // 每个FOC周期的小增量角度积分
   
   /**********STARTS THE VECTOR CONTROL ************************/  
@@ -122,6 +123,33 @@ void FOC_Model(void)
 
   /*Valpha and Vbeta finally drive the power stage*/ 
   CALC_SVPWM(Stat_Volt_alfa_beta); // 计算ccr1 ccr2 ccr3的导通时刻(作用时间)，ccr4的采样值
+#elif defined NO_SPEED_SENSORS
+  Stat_Curr_a_b = GET_PHASE_CURRENTS();
+  Stat_Curr_alfa_beta = Clarke(Stat_Curr_a_b);
+  Stat_Curr_q_d = Park(Stat_Curr_alfa_beta,GET_ELECTRICAL_ANGLE);  
+  
+  STO_Calc_Rotor_Angle(Stat_Volt_alfa_beta,Stat_Curr_alfa_beta,MCL_Get_BusVolt());  // bemf+pll->w theta
+  /*loads the Torque Regulator output reference voltage Vqs*/   
+  Stat_Volt_q_d.qV_Component1 = PID_Regulator(Stat_Curr_q_d_ref_ref.qI_Component1, 
+                        Stat_Curr_q_d.qI_Component1, &PID_Torque_InitStructure);
+
+  
+  /*loads the Flux Regulator output reference voltage Vds*/
+  Stat_Volt_q_d.qV_Component2 = PID_Regulator(Stat_Curr_q_d_ref_ref.qI_Component2, 
+                          Stat_Curr_q_d.qI_Component2, &PID_Flux_InitStructure);  
+    //circle limitation
+  RevPark_Circle_Limitation();
+ 
+  /*Performs the Reverse Park transformation,
+  i.e transforms stator voltages Vqs and Vds into Valpha and Vbeta on a 
+  stationary reference frame*/
+
+  Stat_Volt_alfa_beta = Rev_Park(Stat_Volt_q_d);
+
+  /*Valpha and Vbeta finally drive the power stage*/ 
+  CALC_SVPWM(Stat_Volt_alfa_beta);                        
+#endif
+
 }
 
 /*******************************************************************************

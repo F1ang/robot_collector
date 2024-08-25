@@ -157,11 +157,17 @@ void ADC1_2_IRQHandler(void)
       switch (State)
       {
           case RUN:          
-            FOC_Model();                          // CC4->ADC->FOC执行算法     
+            FOC_Model();                    // CC4->ADC->FOC执行算法 
           break;       
     
           case START:        
-           State = RUN;    
+          #ifdef NO_SPEED_SENSORS
+           STO_Start_Up();
+          #elif defined ENCODER
+           ENC_Start_Up();       
+          #elif defined HALL_SENSORS
+           State = RUN;
+          #endif       
           break; 
     
           default:

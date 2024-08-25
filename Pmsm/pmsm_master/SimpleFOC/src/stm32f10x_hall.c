@@ -657,6 +657,7 @@ void HALL_Init_Electrical_Angle(void)  // HALL 120
  * PSC决定->计数频率->超65535溢出->!载波计数与计数频率!}
  * @return {*}
  */
+#if (defined HALL_SENSORS || defined VIEW_HALL_FEEDBACK)
 void TIM3_IRQHandler(void)
 {
   static u8  bHallState; 
@@ -923,6 +924,6 @@ void TIM3_IRQHandler(void)
     }    
   }
 }
-
+#endif
 
 /******************* (C) COPYRIGHT 2008 STMicroelectronics *****END OF FILE****/

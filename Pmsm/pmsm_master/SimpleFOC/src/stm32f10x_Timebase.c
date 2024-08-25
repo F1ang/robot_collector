@@ -252,9 +252,21 @@ void SysTick_Handler(void)   // 滴答系统计时 500us
   else
   {
     hSpeedMeas_Timebase_500us = SPEED_SAMPLING_TIME;            // 2ms速度采样计算
-    
-    // STO_Calc_Speed();      
-    // STO_Obs_Gains_Update();  
+  
+#ifdef NO_SPEED_SENSORS
+      STO_Calc_Speed();
+      #ifdef OBSERVER_GAIN_TUNING 
+      STO_Obs_Gains_Update();
+      #endif
+      if (State == RUN)
+      {        
+        // if(STO_Check_Speed_Reliability()==FALSE)
+        // {
+        //   MCL_SetFault(SPEED_FEEDBACK);
+        // }    
+      }
+#endif
+     
   }
 
   
@@ -269,10 +281,12 @@ void SysTick_Handler(void)   // 滴答系统计时 500us
     {
       if (State == RUN) 
       {
+#ifdef HALL_SENSORS
         if (HALL_GetSpeed() == HALL_MAX_SPEED)
         {
           MCL_SetFault(SPEED_FEEDBACK);
-        }      
+        }
+#endif     
         //PID_Speed_Coefficients_update(XXX_Get_Speed(),PID_Speed_InitStructure);
         FOC_CalcFluxTorqueRef();  // 速度环      
       }

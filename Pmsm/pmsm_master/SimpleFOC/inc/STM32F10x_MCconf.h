@@ -44,10 +44,10 @@
 //#define ENCODER
 
   /* Position sensing by Hall sensors */
-#define HALL_SENSORS
+// #define HALL_SENSORS
 
 /* Sensorless position sensing  */
-//#define NO_SPEED_SENSORS
+#define NO_SPEED_SENSORS
 /* When in sensorless operation define here if you also want to acquire any */
 /* position sensor information                                              */
 //#define VIEW_HALL_FEEDBACK
@@ -55,7 +55,7 @@
   
 /* When in sensorless operation define here if you want to perform an       */
 /* alignment before the ramp-up                                             */
-//#define NO_SPEED_SENSORS_ALIGNMENT
+#define NO_SPEED_SENSORS_ALIGNMENT
 
 /************************** FOC methods **************************************/
 /* Internal Permanent Magnet Motors Maximum-Torque-per-Ampere strategy */
