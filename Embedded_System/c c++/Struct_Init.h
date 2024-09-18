@@ -52,6 +52,27 @@ typedef struct _sys_irq_handle
 
 //函数表(数组)->注册函数->调用注册函数
 
+#define MINI_ERROR_COM 10
+#define MINI_ERROR_UV 11
+enum error_state_bool_m         // 回调函数返回类型
+{
+  error_off = 0,
+  error_on,
+};
+
+struct app_error_code_t
+{
+  enum error_state_bool_m (*callback)(void);  // 结构体 地址指针 回调函数(无参)
+};
+
+struct mid_event_list_t { // 链表查询check_error_handle[],可以提高效率
+  mid_event_list_t *next;
+  mid_event_list_t *prev;
+  int src_id;
+  int dst_id;
+  int cmd;
+}
+
 #endif
 
 /*

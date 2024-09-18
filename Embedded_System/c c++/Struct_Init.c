@@ -15,13 +15,26 @@ void system_register_irqhandler(unsigned int irq,system_irq_handler_t handler,vo
 static sys_irq_handle_t irqTable[160];
 system_irq_handler_t CallBack();
 
+enum error_state_bool_m mcu_com_error_code_10(void);
+enum error_state_bool_m mcu_com_error_code_11(void);
+
+/* 结构体数组初始化(指定Index) */
+static const struct app_error_code_t check_error_handle[] =
+{
+  [MINI_ERROR_COM] = mcu_com_error_code_10,
+  [MINI_ERROR_UV] = mcu_com_error_code_11,
+}
+
+
 void main(void)
 {
-    printf("%.2f %d\r\n",pid1.Kp,pid1.Max_out);
+  printf("%.2f %d\r\n",pid1.Kp,pid1.Max_out);
 
-    system_register_irqhandler(20,CallBack(),NULL);
+  system_register_irqhandler(20,CallBack(),NULL);
 
-    return;
+  printf("%d", check_error_handle[MINI_ERROR_COM].callback());
+
+  return;
 }
 
 /*
@@ -101,7 +114,15 @@ void union_sen_rev(void)
     receiveData =  commSend.data32;
 }
 
+enum error_state_bool_m mcu_com_error_code_10(void) {
+  printf("mcu_com_error_code_10\r\n");
+  return 0;
+}
 
+enum error_state_bool_m mcu_com_error_code_11(void) {
+  printf("mcu_com_error_code_11\r\n");
+  return 0;
+}
 /* 
     大端存储就是高字节数据放在低地址。(大高低)
     小端存储就是高字节数据放在高地址。(小高高)
