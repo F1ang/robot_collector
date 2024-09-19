@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "vin_task.h": "c",
+        "bsp_encoder.h": "c",
+        "bsp_pid.h": "c"
+    }
+}

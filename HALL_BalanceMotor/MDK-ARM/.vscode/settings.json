@@ -1,0 +1,12 @@
+{
+    "files.associations": {
+        "imu_task.h": "c",
+        "bsp_motor.h": "c",
+        "bsp_tim.h": "c",
+        "freertos.h": "c",
+        "main.h": "c",
+        "bsp_log.h": "c",
+        "tim.h": "c",
+        "bsp_usart.h": "c"
+    }
+}

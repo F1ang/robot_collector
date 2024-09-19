@@ -1,0 +1,8 @@
+//
+// Created by Hacker on 2024/4/28.
+//
+
+#ifndef HALL_BALANCEMOTOR_BSP_OTHER_H
+#define HALL_BALANCEMOTOR_BSP_OTHER_H
+
+#endif //HALL_BALANCEMOTOR_BSP_OTHER_H
