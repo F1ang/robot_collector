@@ -66,12 +66,12 @@ struct app_error_code_t
 };
 
 struct mid_event_list_t { // 链表查询check_error_handle[],可以提高效率
-  mid_event_list_t *next;
-  mid_event_list_t *prev;
+  // mid_event_list_t *next; // 编译器可能不支持
+  // mid_event_list_t *prev;
   int src_id;
   int dst_id;
   int cmd;
-}
+};
 
 #endif
 

@@ -23,8 +23,14 @@ static const struct app_error_code_t check_error_handle[] =
 {
   [MINI_ERROR_COM] = mcu_com_error_code_10,
   [MINI_ERROR_UV] = mcu_com_error_code_11,
-}
+};
 
+/* 地址指针函数数组 */
+static void step1ReadADC(void);
+static void step2OpenACC(void);
+
+static void (*testFunctions[])(void) = {NULL, step1ReadADC, step2OpenACC};
+int count = sizeof(testFunctions)/sizeof(testFunctions[0]);
 
 void main(void)
 {
@@ -34,6 +40,8 @@ void main(void)
 
   printf("%d", check_error_handle[MINI_ERROR_COM].callback());
 
+  testFunctions[2]();
+  
   return;
 }
 
@@ -55,9 +63,6 @@ system_irq_handler_t CallBack()
 {
     printf("callback...\r\n");
 }
-
-
-
 
 //通过访问和修改联合体中的定义bitdata成员，可以间接的访问和修改定义的bytedata的值，这可以用在嵌入式的寄存器位操作上
 
@@ -123,6 +128,18 @@ enum error_state_bool_m mcu_com_error_code_11(void) {
   printf("mcu_com_error_code_11\r\n");
   return 0;
 }
+
+// 地址指针函数数组
+static void step1ReadADC(void)
+{
+  printf("step1ReadADC\r\n");
+}
+
+static void step2OpenACC(void)
+{
+  printf("step2OpenACC\r\n");
+}
+
 /* 
     大端存储就是高字节数据放在低地址。(大高低)
     小端存储就是高字节数据放在高地址。(小高高)
