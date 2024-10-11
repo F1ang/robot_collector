@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+      "bsp_mpu9250.h": "c",
+      "sys.h": "c",
+      "main.h": "c",
+      "freertos.h": "c",
+      "bsp_usart.h": "c",
+      "stm32f4xx_hal.h": "c"
+    }
+}
