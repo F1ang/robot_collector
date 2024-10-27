@@ -18,7 +18,7 @@ void Logger_Task(void const * argument)
 {
   for(;;)
   {
+    HAL_GPIO_TogglePin(LED8_GPIO_Port, LED8_Pin);
     osDelay(1000);
   }
 }
-

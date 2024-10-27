@@ -1,5 +1,6 @@
 --cpu=Cortex-M4.fp.sp
 "imu_ekf_rm_aboard\startup_stm32f427xx.o"
+"..\Drivers\CMSIS\Lib\ARM\arm_cortexM4lf_math.lib"
 "imu_ekf_rm_aboard\main.o"
 "imu_ekf_rm_aboard\gpio.o"
 "imu_ekf_rm_aboard\freertos.o"
@@ -38,8 +39,10 @@
 "imu_ekf_rm_aboard\port.o"
 "imu_ekf_rm_aboard\bsp_imu.o"
 "imu_ekf_rm_aboard\myiic.o"
+"imu_ekf_rm_aboard\bsp_dwt.o"
 "imu_ekf_rm_aboard\imu_task.o"
 "imu_ekf_rm_aboard\logger_task.o"
+"../Middlewares/ST/ARM/DSP/Lib/arm_cortexM4lf_math.lib"
 --library_type=microlib --strict --scatter "imu_ekf_rm_aboard\imu_ekf_rm_aboard.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers

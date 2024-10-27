@@ -1,8 +1,7 @@
 #include "imu_task.h"
 #include "bsp_imu.h"
 
-extern UART_HandleTypeDef huart6;
-extern imu_t              imu;
+
 char buf[300];
 int count;
 

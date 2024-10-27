@@ -60,6 +60,24 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define LED8_Pin GPIO_PIN_8
+#define LED8_GPIO_Port GPIOG
+#define LED7_Pin GPIO_PIN_7
+#define LED7_GPIO_Port GPIOG
+#define LED6_Pin GPIO_PIN_6
+#define LED6_GPIO_Port GPIOG
+#define SPI5_NSS_Pin GPIO_PIN_6
+#define SPI5_NSS_GPIO_Port GPIOF
+#define LED5_Pin GPIO_PIN_5
+#define LED5_GPIO_Port GPIOG
+#define LED4_Pin GPIO_PIN_4
+#define LED4_GPIO_Port GPIOG
+#define LED3_Pin GPIO_PIN_3
+#define LED3_GPIO_Port GPIOG
+#define LED2_Pin GPIO_PIN_2
+#define LED2_GPIO_Port GPIOG
+#define LED1_Pin GPIO_PIN_1
+#define LED1_GPIO_Port GPIOG
 
 /* USER CODE BEGIN Private defines */
 #define COUNTOF(__BUFFER__)   (sizeof(__BUFFER__) / sizeof(*(__BUFFER__)))

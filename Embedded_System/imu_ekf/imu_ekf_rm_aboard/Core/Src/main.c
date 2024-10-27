@@ -27,6 +27,11 @@
 /* USER CODE BEGIN Includes */
 
 #include "bsp_imu.h"
+#include "bsp_dwt.h"
+#include "arm_math.h"
+#include "math.h"
+#include "stdint.h"
+#include "stdlib.h"
 
 /* USER CODE END Includes */
 
@@ -37,6 +42,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
+#define FPU_DEBUG 0       // 开启FPU浮点运算测试
 
 /* USER CODE END PD */
 
@@ -60,6 +67,9 @@ void MX_FREERTOS_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+#ifdef FPU_DEBUG
+  float fpu_test = 0;
+#endif //FPU_DEBUG 1
 
 /* USER CODE END 0 */
 
@@ -94,9 +104,14 @@ int main(void)
   MX_SPI5_Init();
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
+  DWT_Init(168);
+#ifdef FPU_DEBUG
+  fpu_test = arm_sin_f32(3.1415926/6);//sin（30°），理论值为0.5
+#endif
 	mpu_device_init();
 	init_quaternion();	
 	printf("rm_aboard & imu & ekf\r\n");
+  printf("imu id = %x\r\n", id);
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in freertos.c) */

@@ -1,0 +1,9 @@
+{
+  "files.associations": {
+    "imu_task.h": "c",
+    "bsp_dwt.h": "c",
+    "gpio.h": "c",
+    "main.h": "c",
+    "logger_task.h": "c"
+  }
+}

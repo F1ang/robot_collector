@@ -67,6 +67,7 @@ typedef struct
 
 extern mpu_data_t mpu_data;
 extern imu_t      imu;
+extern uint8_t    id;
 
 uint8_t   mpu_device_init(void);
 void init_quaternion(void);
