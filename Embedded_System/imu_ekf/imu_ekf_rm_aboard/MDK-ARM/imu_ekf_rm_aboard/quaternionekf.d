@@ -1,0 +1,16 @@
+imu_ekf_rm_aboard\quaternionekf.o: ..\Mathlib\src\QuaternionEKF.c
+imu_ekf_rm_aboard\quaternionekf.o: ..\Mathlib\inc\QuaternionEKF.h
+imu_ekf_rm_aboard\quaternionekf.o: ..\Mathlib\inc\kalman_filter.h
+imu_ekf_rm_aboard\quaternionekf.o: ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f427xx.h
+imu_ekf_rm_aboard\quaternionekf.o: ../Drivers/CMSIS/Include/core_cm4.h
+imu_ekf_rm_aboard\quaternionekf.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+imu_ekf_rm_aboard\quaternionekf.o: ../Drivers/CMSIS/Include/cmsis_version.h
+imu_ekf_rm_aboard\quaternionekf.o: ../Drivers/CMSIS/Include/cmsis_compiler.h
+imu_ekf_rm_aboard\quaternionekf.o: ../Drivers/CMSIS/Include/cmsis_armcc.h
+imu_ekf_rm_aboard\quaternionekf.o: ../Drivers/CMSIS/Include/mpu_armv7.h
+imu_ekf_rm_aboard\quaternionekf.o: ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/system_stm32f4xx.h
+imu_ekf_rm_aboard\quaternionekf.o: ..\Drivers\CMSIS\DSP\Include\arm_math.h
+imu_ekf_rm_aboard\quaternionekf.o: ../Drivers/CMSIS/Include/core_cm4.h
+imu_ekf_rm_aboard\quaternionekf.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+imu_ekf_rm_aboard\quaternionekf.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
+imu_ekf_rm_aboard\quaternionekf.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
