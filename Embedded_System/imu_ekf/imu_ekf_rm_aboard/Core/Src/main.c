@@ -43,7 +43,7 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-#define FPU_DEBUG 1       // 开启FPU浮点运算测试
+#define FPU_DEBUG 0       // 开启FPU浮点运算测试
 
 /* USER CODE END PD */
 
@@ -104,13 +104,14 @@ int main(void)
   MX_SPI5_Init();
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
+  DWT_Init(168);
 #ifdef FPU_DEBUG
   fpu_test = arm_sin_f32(3.1415926/6);//sin（30°），理论值为0.5
 #endif
 	mpu_device_init();
 	init_quaternion();	
+	printf("rm_aboard & imu & ekf\r\n");
   printf("imu id = %x\r\n", id);
-  DWT_Init(168);
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in freertos.c) */
