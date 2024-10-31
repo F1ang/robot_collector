@@ -1,5 +1,5 @@
 #include "logger_task.h"
-
+#include "bsp_imu.h"
 
 int fputc(int ch, FILE *f)
 {
@@ -18,7 +18,9 @@ void Logger_Task(void const * argument)
 {
   for(;;)
   {
+    //printf("Accel_x:%.1f  Gyro_x:%.1f  mx:%d\r\n", INS.Accel[X], INS.Gyro[X], mpu_data.mx); 
+		printf("%f,%f,%f\n", INS.Roll, INS.Pitch, INS.Yaw);
     HAL_GPIO_TogglePin(LED8_GPIO_Port, LED8_Pin);
-    osDelay(1000);
+    osDelay(10);
   }
 }

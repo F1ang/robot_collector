@@ -7,14 +7,16 @@ int count;
 
 void Imu_Task(void const * argument)
 {
-	printf("rm_aboard & imu & ekf\r\n");
+  /* ekf */
+  INS_Init();
   for(;;)
   {
-		mpu_get_data();
-		imu_ahrs_update();
-		imu_attitude_update(); 	
-		printf("quat roll:%.1f  pitch:%.1f  yaw:%.1f\r\n", imu.rol, imu.pit, imu.yaw);
-    osDelay(10);
+		// mpu_get_data();
+		// imu_ahrs_update();
+		// imu_attitude_update(); 
+		//printf("xxx quat roll:%.1f  pitch:%.1f  yaw:%.1f\r\n", INS.Roll, INS.Pitch, INS.Yaw);
+    INS_Task();	
+    osDelay(1);
   }
 }
 
