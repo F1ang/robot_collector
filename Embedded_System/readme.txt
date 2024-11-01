@@ -21,3 +21,4 @@ MPU6500+IST8310:
 (4)注:此例ekf部分参考哈工程创梦之翼战队的 Wang Hongxi . 
 原文链接 https://github.com/WangHongxi2001/RoboMaster-C-Board-INS-Example.git
 教程系列链接 https://zhuanlan.zhihu.com/p/454155643
+视频链接 https://www.bilibili.com/video/BV1LXSdYUEGG/?spm_id_from=333.1365.list.card_archive.click
