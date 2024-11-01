@@ -11,10 +11,6 @@ void Imu_Task(void const * argument)
   INS_Init();
   for(;;)
   {
-		// mpu_get_data();
-		// imu_ahrs_update();
-		// imu_attitude_update(); 
-		//printf("xxx quat roll:%.1f  pitch:%.1f  yaw:%.1f\r\n", INS.Roll, INS.Pitch, INS.Yaw);
     INS_Task();	
     osDelay(1);
   }

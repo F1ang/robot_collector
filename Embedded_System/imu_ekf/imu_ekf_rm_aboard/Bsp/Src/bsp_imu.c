@@ -672,6 +672,7 @@ void imu_ahrs_update(void)
 	q2 = tempq2 * norm;
 	q3 = tempq3 * norm;
 
+  /* PI互补滤波器调节陀螺仪 */
   imu.wx_cal = gx;
   imu.wy_cal = gy;
   imu.wz_cal = gz;
@@ -741,17 +742,7 @@ INS_t INS;
 
 void INS_Init(void)
 {
-//  IMU_Param.scale[X] = 1;
-//  IMU_Param.scale[Y] = 1;
-//  IMU_Param.scale[Z] = 1;
-//  IMU_Param.Yaw = 0;
-//  IMU_Param.Pitch = 0;
-//  IMU_Param.Roll = 0;
-//  IMU_Param.flag = 1;
-
-  // Q=q+w过程噪声 R=量测噪声 渐消因子 lpf
-//  IMU_QuaternionEKF_Init(10, 0.001, 10000000, 1, 0);
-//  INS.AccelLPF = 0;
+  // Q=q+w过程噪声 R=量测噪声 渐消因子 dt lpf
 	IMU_QuaternionEKF_Init(10, 0.001, 10000000, 1, 0.001f,0); //ekf初始化
 }
 
@@ -772,45 +763,12 @@ void INS_Task(void)
   // ins update
   if ((count % 1) == 0)
   {
-    // BMI088_Read(&BMI088);
-    // mpu_get_data();
 		mpu_get_data();
 		imu_ahrs_update();
-//    INS.Accel[X] = imu.ax;
-//    INS.Accel[Y] = imu.ay;
-//    INS.Accel[Z] = imu.az;
-//    INS.Gyro[X] = imu.wx;
-//    INS.Gyro[Y] = imu.wy;
-//    INS.Gyro[Z] = imu.wz;
-
-    // demo function,用于修正安装误差,可以不管,本demo暂时没用
-    // IMU_Param_Correction(&IMU_Param, INS.Gyro, INS.Accel);
-
-    // 计算重力加速度矢量和b系的XY两轴的夹角,可用作功能扩展,本demo暂时没用
-    // INS.atanxz = -atan2f(INS.Accel[X], INS.Accel[Z]) * 180 / PI;
-    // INS.atanyz = atan2f(INS.Accel[Y], INS.Accel[Z]) * 180 / PI;
 
     // 核心函数,EKF更新四元数
-//    IMU_QuaternionEKF_Update(INS.Gyro[X], INS.Gyro[Y], INS.Gyro[Z], INS.Accel[X], INS.Accel[Y], INS.Accel[Z], dt);
-		//IMU_QuaternionEKF_Update(imu.wx, imu.wy, imu.wz, imu.ax, imu.ay, imu.az, dt);
 		IMU_QuaternionEKF_Update(imu.wx_cal, imu.wy_cal, imu.wz_cal, imu.ax, imu.ay, imu.az);  
 		
-    // memcpy(INS.q, QEKF_INS.q, sizeof(QEKF_INS.q));
-
-    // 机体系基向量转换到导航坐标系，本例选取惯性系为导航系
-    // BodyFrameToEarthFrame(xb, INS.xn, INS.q);
-    // BodyFrameToEarthFrame(yb, INS.yn, INS.q);
-    // BodyFrameToEarthFrame(zb, INS.zn, INS.q);
-
-    // 将重力从导航坐标系n转换到机体系b,随后根据加速度计数据计算运动加速度
-    // float gravity_b[3];
-    // EarthFrameToBodyFrame(gravity, gravity_b, INS.q);
-    // for (uint8_t i = 0; i < 3; i++) // 同样过一个低通滤波
-    // {
-    //   INS.MotionAccel_b[i] = (INS.Accel[i] - gravity_b[i]) * dt / (INS.AccelLPF + dt) + INS.MotionAccel_b[i] * INS.AccelLPF / (INS.AccelLPF + dt);
-    // }
-    // BodyFrameToEarthFrame(INS.MotionAccel_b, INS.MotionAccel_n, INS.q); // 转换回导航系n
-
     // 获取最终数据
     INS.Yaw = QEKF_INS.Yaw;
     INS.Pitch = QEKF_INS.Pitch;
@@ -822,7 +780,6 @@ void INS_Task(void)
   if ((count % 2) == 0)
   {
     // 500hz
-    // IMU_Temperature_Ctrl();
   }
 
   if ((count % 1000) == 0)
