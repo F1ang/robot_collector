@@ -1,0 +1,9 @@
+{
+  "files.associations": {
+    "arm_math.h": "c",
+    "main.h": "c",
+    "stdio.h": "c",
+    "sys.h": "c",
+    "struct_init.h": "c"
+  }
+}
