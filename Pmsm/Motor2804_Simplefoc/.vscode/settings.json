@@ -1,0 +1,17 @@
+{
+   "files.associations": {
+      "math.h": "c",
+      "arm_common_tables.h": "c",
+      "arm_math.h": "c",
+      "stdint.h": "c",
+      "bsp_foc.h": "c",
+      "cmsis_os.h": "c",
+      "stm32f4xx_hal.h": "c",
+      "stdlib.h": "c",
+      "bsp_dwt.h": "c",
+      "tim.h": "c",
+      "main.h": "c",
+      "stm32f4xx_hal_conf.h": "c",
+      "stm32f4xx_hal_tim.h": "c"
+   }
+}
