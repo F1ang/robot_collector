@@ -34,6 +34,11 @@
 #include "bsp_dwt.h"
 #include "bsp_as5600.h"
 #include "bsp_foc.h"
+#include "bsp_usart.h"
+#include "bsp_log.h"
+
+#define LOG_TAG "MAIN"
+#include "bsp_log.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -44,7 +49,7 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-#define FPU_DEBUG 1 // �??启浮点运�??
+#define FPU_DEBUG 1 // 是否开启浮点运算
 
 /* USER CODE END PD */
 
@@ -110,6 +115,7 @@ int main(void)
 #endif
     DWT_Init(168);
     bsp_as5600Init();
+    Log_Init();
     /* USER CODE END 2 */
 
     /* Call init function for freertos objects (in freertos.c) */

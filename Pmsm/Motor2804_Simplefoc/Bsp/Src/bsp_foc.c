@@ -122,8 +122,8 @@ void foc_register_func(foc_register_func_list id, foc_callbak func)
 // 速度开环 input:uq=x ud=0
 void open_loop_speed_control(foc_handler *foc_data)
 {
-	  foc_data->uq = 4;
-		foc_data->ud = 0;
+//	  foc_data->uq = 4;
+//		foc_data->ud = 0;
 	
     // electrical angle
     Get_Elec_Angle(foc_data);

@@ -339,7 +339,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32F407xx,ARM_MATH_CM4,__FPU_USED=1U,__FPU_PRESENT=1U,__CC_ARM,ARM_MATH_MATRIX_CHECK,ARM_MATH_ROUNDING</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../Drivers/STM32F4xx_HAL_Driver/Inc;../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Drivers/CMSIS/Device/ST/STM32F4xx/Include;../Drivers/CMSIS/Include;../Bsp/Inc;../Task/Inc;../Drivers/CMSIS/DSP/Include;../Middlewares/ST/ARM/DSP/Inc</IncludePath>
+              <IncludePath>../Core/Inc;../Drivers/STM32F4xx_HAL_Driver/Inc;../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Drivers/CMSIS/Device/ST/STM32F4xx/Include;../Drivers/CMSIS/Include;../Bsp/Inc;../Task/Inc;../Drivers/CMSIS/DSP/Include;../Middlewares/ST/ARM/DSP/Inc;..\Easylogger\inc</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -669,6 +669,21 @@
               <FileType>1</FileType>
               <FilePath>..\Bsp\Src\bsp_foc.c</FilePath>
             </File>
+            <File>
+              <FileName>bsp_cmd.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Bsp\Src\bsp_cmd.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_log.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Bsp\Src\bsp_log.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_usart.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Bsp\Src\bsp_usart.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -690,6 +705,29 @@
               <FilePath>..\Task\Src\motor_task.c</FilePath>
             </File>
           </Files>
+        </Group>
+        <Group>
+          <GroupName>Easylogger</GroupName>
+          <Files>
+            <File>
+              <FileName>elog.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Easylogger\src\elog.c</FilePath>
+            </File>
+            <File>
+              <FileName>elog_utils.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Easylogger\src\elog_utils.c</FilePath>
+            </File>
+            <File>
+              <FileName>elog_port.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Easylogger\port\elog_port.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>::CMSIS</GroupName>
         </Group>
         <Group>
           <GroupName>Middlewares/Library/DSP Library/DSP Library</GroupName>
@@ -788,9 +826,6 @@
               </FileOption>
             </File>
           </Files>
-        </Group>
-        <Group>
-          <GroupName>::CMSIS</GroupName>
         </Group>
       </Groups>
     </Target>
