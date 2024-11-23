@@ -190,9 +190,15 @@ void set_speed(void)
     int num = 0;
     split(CMD_Buffer, " ", buf, &num);
 
-    foc_data_handler.pos_loop.target_pos = (int16_t)(atof(buf[1])); // 单位rad
     // foc_data_handler.uq = (int16_t)(atof(buf[2]));
-    foc_data_handler.pos_loop.kp = -(float)(atof(buf[3])) / 10;
+
+    // 上位机参数:5 0 70
+    // foc_data_handler.pos_loop.target_pos = (int16_t)(atof(buf[1])); // 单位rad
+    // foc_data_handler.pos_loop.kp = -(float)(atof(buf[3])) / 10;
+
+    // 上位机参数:1 0 -8
+    foc_data_handler.speed_loop.target_speed = (int16_t)(atof(buf[1])); // 单位rad/s    1 0 -8
+    foc_data_handler.speed_loop.kp = -(float)(atof(buf[3])) / 10;
 
     printf("\t[%.2f]\t[%.2f]\t[%.1f]\t\r\n",
            atof(buf[1]),

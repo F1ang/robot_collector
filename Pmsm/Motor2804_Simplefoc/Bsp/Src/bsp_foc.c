@@ -105,6 +105,7 @@ void TIM1_PWM_Init(void)
 static float Low_Pass_Filter(foc_handler *foc_data, float dt)
 {
     float lpf_speed = 0;
+    foc_data->speed_lpf_a = 0.8;
     lpf_speed = (foc_data->speed_lpf_a * foc_data->speed_last) + (1.0f - foc_data->speed_lpf_a) * foc_data->speed;
     foc_data->speed_last = lpf_speed;
     return lpf_speed;
@@ -113,12 +114,11 @@ static float Low_Pass_Filter(foc_handler *foc_data, float dt)
 // 获取电角度
 void Get_Elec_Angle(foc_handler *foc_data)
 {
-    float angle_delta = 0, angle_raw = 0;
     // 总机械角度
     foc_data->angle = bsp_as5600GetAngle();
     foc_data->angle_cal = DEG2RAD(foc_data->angle); // 总电机转角(rad)
-    angle_delta = DEG2RAD(foc_data->angle - foc_data->angle_last - foc_data->angle_offset);
-    foc_data->angle_last = foc_data->angle;
+    // foc_data->angle_delta = DEG2RAD(foc_data->angle - foc_data->angle_last - foc_data->angle_offset);
+    // foc_data->angle_last = foc_data->angle;
 
     // 归一化角度(0~2pi)
     foc_data->angle_norm_deg = fmod((foc_data->angle - foc_data->angle_offset), 360.0f); // 归一化机械角度(°)
@@ -129,14 +129,15 @@ void Get_Elec_Angle(foc_handler *foc_data)
 
 void GET_Speed(foc_handler *foc_data)
 {
-    float dt = 0;
+    float dt = 0, angle_speed = 0;
     dt = DWT_GetDeltaT(&(foc_data->delt_dt));
 
-    foc_data->angle = bsp_as5600GetAngle();
-    foc_data->speed = (foc_data->angle - foc_data->angle_last) / dt;
-    foc_data->angle_last = foc_data->angle;
+    angle_speed = bsp_as5600GetAngle() - foc_data->angle_offset;
+    foc_data->angle_delta = DEG2RAD(angle_speed) - DEG2RAD(foc_data->angle_last); // 分辨率低,存在不可避免偏差
+    foc_data->speed = (foc_data->angle_delta / dt) * 10 / 4;
+    foc_data->angle_last = angle_speed;
 
-    foc_data->speed = Low_Pass_Filter(foc_data, dt); // 一阶线性低通滤波
+    // foc_data->speed = Low_Pass_Filter(foc_data, dt); // 一阶线性低通滤波
 }
 
 /**
@@ -157,8 +158,9 @@ void open_loop_speed_control(foc_handler *foc_data)
     // electrical angle
     Get_Elec_Angle(foc_data);
 
-    // control
-    Position_Control(foc_data);
+    // control loop
+    // Position_Control(foc_data);
+    Speed_Control(foc_data); // 速度环(rad/s)
 
     // transform
     foc_data->uq = Limit_up_and_down(foc_data->uq, -5.0f, 5.0f);
@@ -196,8 +198,20 @@ void Start_Up(foc_handler *foc_data)
 // 位置环(rad)
 void Position_Control(foc_handler *foc_data)
 {
-    //foc_data->pos_loop.kp = 1.0f;
+    // foc_data->pos_loop.kp = 1.0f;
     foc_data->pos_loop.real_pos = foc_data->angle_norm_deg;
     foc_data->pos_loop.error_pos = foc_data->pos_loop.target_pos - foc_data->pos_loop.real_pos;
     foc_data->uq = foc_data->pos_loop.kp * foc_data->pos_loop.error_pos;
+
+    // 双环控制接口
+    // foc_data->speed_loop.target_speed = foc_data->pos_loop.kp * foc_data->pos_loop.error_pos;
+}
+
+// 速度环(rad/s)
+void Speed_Control(foc_handler *foc_data)
+{
+    // foc_data->speed_loop.kp = 0.8f; // 速度环增益(单位rad/s)
+    foc_data->speed_loop.real_speed = foc_data->speed;
+    foc_data->speed_loop.error_speed = foc_data->speed_loop.target_speed - foc_data->speed_loop.real_speed;
+    foc_data->uq = foc_data->speed_loop.kp * foc_data->speed_loop.error_speed;
 }

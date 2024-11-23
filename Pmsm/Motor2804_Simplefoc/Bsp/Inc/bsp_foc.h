@@ -45,6 +45,13 @@ typedef struct
 
 typedef struct
 {
+    float kp, ki, kd;
+    float target_speed, real_speed;
+    float error_speed, error_speed_last;
+} speed_loop;
+
+typedef struct
+{
     float ua, ub, uc;
     float u_alpha, u_beta;
     float ud, uq;
@@ -54,7 +61,7 @@ typedef struct
     float iq, id;
 
     float angle, angle_cal, angle_norm_deg, angle_norm_rad; // 原始角度与rad角度 归一化弧度(0~2pi)
-    float angle_last, circle_num;
+    float angle_last, circle_num, angle_delta;
     float elec_angle;
     float angle_offset; // 机械角度偏移
 
@@ -68,6 +75,7 @@ typedef struct
     MOTOR_MODE m_mode;
     MOTOR_DIR m_dir;
     position_loop pos_loop;
+    speed_loop speed_loop;
 } foc_handler;
 
 enum foc_transform_list
@@ -100,5 +108,6 @@ extern void GET_Speed(foc_handler *foc_data);
 extern void open_loop_speed_control(foc_handler *foc_data);
 extern void Start_Up(foc_handler *foc_data);
 extern void Position_Control(foc_handler *foc_data);
+extern void Speed_Control(foc_handler *foc_data);
 
 #endif // !_BSP_FOC_H_
