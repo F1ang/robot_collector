@@ -18,42 +18,77 @@
 #define VOLTAGE_POWER_LIMIT 12.0f // 电压功率限制,单位:V
 #define PAIRS_OF_POLES 7          // 电机的对数对数
 
+#define PI_VALUE 3.14159265358979323846f
+#define DEG2RAD(x) (x * PI_VALUE / 180.0f)
+#define ABS_X(x) ((x) < 0 ? -(x) : (x))
+
+#define START_UP_UQ 3.0f // 启动时Uq
+
+typedef enum
+{
+    MOTOR_START_UP = 0, // 预定位
+    MOTOR_RUN = 1,      // 运行
+} MOTOR_MODE;
+
+typedef enum
+{
+    MOTOR_CW = -1, // 正转
+    MOTOR_CCW = 1,
+} MOTOR_DIR;
+
 typedef struct
 {
-   float ua, ub, uc;
-   float u_alpha, u_beta;
-   float ud, uq;
+    float kp, ki, kd;
+    float target_pos, real_pos;
+    float error_pos, error_pos_last;
+} position_loop;
 
-   float ia, ib, ic;
-   float i_aphla, i_bphla;
-   float iq, id;
+typedef struct
+{
+    float ua, ub, uc;
+    float u_alpha, u_beta;
+    float ud, uq;
 
-   float angle;
-   float angle_last;
-   float elec_angle;
-   float voltage_power_offset; // 电压偏置,SPWM波无负值
-   float speed;
-   uint32_t delt_dt; // dt
+    float ia, ib, ic;
+    float i_aphla, i_bphla;
+    float iq, id;
+
+    float angle, angle_cal, angle_norm_deg, angle_norm_rad; // 原始角度与rad角度 归一化弧度(0~2pi)
+    float angle_last, circle_num;
+    float elec_angle;
+    float angle_offset; // 机械角度偏移
+
+    float voltage_power_offset; // 电压偏置,SPWM波无负值
+    float speed;
+    float speed_last;
+    uint32_t delt_dt; // dt
+
+    float speed_lpf_a;
+
+    MOTOR_MODE m_mode;
+    MOTOR_DIR m_dir;
+    position_loop pos_loop;
 } foc_handler;
 
 enum foc_transform_list
 {
-   CLARKE_TRANSFORM = 0,
-   CLARKE_INVERSE_TRANSFORM,
-   PARK_TRANSFORM,
-   PARK_INVERSE_TRANSFORM
+    CLARKE_TRANSFORM = 0,
+    CLARKE_INVERSE_TRANSFORM,
+    PARK_TRANSFORM,
+    PARK_INVERSE_TRANSFORM
 };
 
 typedef enum
 {
-   SET_SVPWM_FUNC = 0,
-   READ_CURR_FUNC,
-   READ_ANGLE_FUNC,
-   READ__FUNC
+    SET_SVPWM_FUNC = 0,
+    READ_CURR_FUNC,
+    READ_ANGLE_FUNC,
+    READ__FUNC
 } foc_register_func_list;
 
 typedef void (*foc_callbak)(foc_handler *foc_data);
 extern foc_callbak foc_transform[];
+extern foc_handler foc_data_handler;
 
 extern void foc_register_func(foc_register_func_list id, foc_callbak func);
 extern void TIM1_PWM_Init(void);
@@ -63,5 +98,7 @@ extern void Get_Elec_Angle(foc_handler *foc_data);
 extern void GET_Speed(foc_handler *foc_data);
 
 extern void open_loop_speed_control(foc_handler *foc_data);
+extern void Start_Up(foc_handler *foc_data);
+extern void Position_Control(foc_handler *foc_data);
 
 #endif // !_BSP_FOC_H_

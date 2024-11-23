@@ -9,8 +9,6 @@
 #define SCB_AIRCR (*(volatile unsigned long *)0xE000ED0C) /* Reset control Address Register */
 #define SCB_RESET_VALUE 0x05FA0004                        /* Reset value, write to SCB_AIRCR can reset cpu */
 
-extern uint16_t angle_raw;
-extern uint16_t angle;
 extern foc_handler foc_data_handler;
 
 void split(char *src, const char *separator, char **dest, int *num)
@@ -152,7 +150,6 @@ void show_encoder(void)
 {
     while (1)
     {
-        printf("angle_raw: %d, angle: %d\r\n", angle_raw, angle);
         cmd_exit();
 
         osDelay(20);
@@ -193,8 +190,9 @@ void set_speed(void)
     int num = 0;
     split(CMD_Buffer, " ", buf, &num);
 
-    foc_data_handler.speed = (int16_t)(atof(buf[1]));
-		foc_data_handler.uq = (int16_t)(atof(buf[2]));
+    foc_data_handler.pos_loop.target_pos = (int16_t)(atof(buf[1])); // 单位rad
+    // foc_data_handler.uq = (int16_t)(atof(buf[2]));
+    foc_data_handler.pos_loop.kp = -(float)(atof(buf[3])) / 10;
 
     printf("\t[%.2f]\t[%.2f]\t[%.1f]\t\r\n",
            atof(buf[1]),

@@ -21,6 +21,14 @@ foc_callbak foc_transform[] = {
     [PARK_INVERSE_TRANSFORM] = Park_Inv_Transform,
 };
 
+// 返回(limit_down,limit_up)间值
+static float Limit_up_and_down(float input, float limit_down, float limit_up)
+{
+    float output = 0;
+    output = (input < limit_down) ? limit_down : ((input > limit_up) ? limit_up : input);
+    return output;
+}
+
 // clark变换: i_abc->i_alphab, i_beta
 static void Clarke_Transform(foc_handler *foc_data)
 {
@@ -67,6 +75,9 @@ static void Clarke_Inv_Transform(foc_handler *foc_data)
 // SVPWM控制函数接口
 void Set_SVPWM(foc_handler *foc_data)
 {
+    foc_data->ua = Limit_up_and_down(foc_data->ua, 0, 10.0f);
+    foc_data->ub = Limit_up_and_down(foc_data->ub, 0, 10.0f);
+    foc_data->uc = Limit_up_and_down(foc_data->uc, 0, 10.0f);
     /* Load compare registers values */
     TIM1->CCR1 = foc_data->ua / VOLTAGE_POWER_LIMIT * 5250;
     TIM1->CCR2 = foc_data->ub / VOLTAGE_POWER_LIMIT * 5250;
@@ -90,10 +101,29 @@ void TIM1_PWM_Init(void)
     HAL_TIM_Base_Start(&htim1);
 }
 
+// 一阶线性低通滤波
+static float Low_Pass_Filter(foc_handler *foc_data, float dt)
+{
+    float lpf_speed = 0;
+    lpf_speed = (foc_data->speed_lpf_a * foc_data->speed_last) + (1.0f - foc_data->speed_lpf_a) * foc_data->speed;
+    foc_data->speed_last = lpf_speed;
+    return lpf_speed;
+}
+
 // 获取电角度
 void Get_Elec_Angle(foc_handler *foc_data)
 {
+    float angle_delta = 0, angle_raw = 0;
+    // 总机械角度
     foc_data->angle = bsp_as5600GetAngle();
+    foc_data->angle_cal = DEG2RAD(foc_data->angle); // 总电机转角(rad)
+    angle_delta = DEG2RAD(foc_data->angle - foc_data->angle_last - foc_data->angle_offset);
+    foc_data->angle_last = foc_data->angle;
+
+    // 归一化角度(0~2pi)
+    foc_data->angle_norm_deg = fmod((foc_data->angle - foc_data->angle_offset), 360.0f); // 归一化机械角度(°)
+    foc_data->angle_norm_rad = DEG2RAD(foc_data->angle_norm_deg);
+
     foc_data->elec_angle = PAIRS_OF_POLES * foc_data->angle;
 }
 
@@ -105,6 +135,8 @@ void GET_Speed(foc_handler *foc_data)
     foc_data->angle = bsp_as5600GetAngle();
     foc_data->speed = (foc_data->angle - foc_data->angle_last) / dt;
     foc_data->angle_last = foc_data->angle;
+
+    foc_data->speed = Low_Pass_Filter(foc_data, dt); // 一阶线性低通滤波
 }
 
 /**
@@ -122,16 +154,50 @@ void foc_register_func(foc_register_func_list id, foc_callbak func)
 // 速度开环 input:uq=x ud=0
 void open_loop_speed_control(foc_handler *foc_data)
 {
-//	  foc_data->uq = 4;
-//		foc_data->ud = 0;
-	
     // electrical angle
     Get_Elec_Angle(foc_data);
 
+    // control
+    Position_Control(foc_data);
+
     // transform
+    foc_data->uq = Limit_up_and_down(foc_data->uq, -5.0f, 5.0f);
+    foc_data->ud = 0;
+
     foc_transform[PARK_INVERSE_TRANSFORM](foc_data);   // park逆变换 uq,ud->u_alphab,u_beta
     foc_transform[CLARKE_INVERSE_TRANSFORM](foc_data); // clark逆变换 u_alphab,u_beta->u_abc
 
     // ua ub uc
     Set_SVPWM(foc_data); // SVPWM控制函数接口
+}
+
+// 预定位(开环强拖)
+void Start_Up(foc_handler *foc_data)
+{
+    foc_data->uq = START_UP_UQ; // 开环拖动theta=0,Ud=a,Uq=0
+    foc_data->ud = 0.0f;
+    foc_data->elec_angle = 0.0f;
+    foc_transform[PARK_INVERSE_TRANSFORM](foc_data);
+    foc_transform[CLARKE_INVERSE_TRANSFORM](foc_data);
+    Set_SVPWM(foc_data); // SVPWM控制函数接口
+    HAL_Delay(3000);
+
+    foc_data->angle_offset = bsp_as5600GetAngle();
+    HAL_Delay(20);
+
+    foc_data->uq = 0;
+    foc_data->ud = 0.0f;
+    foc_data->elec_angle = 0.0f;
+    foc_transform[PARK_INVERSE_TRANSFORM](foc_data);
+    foc_transform[CLARKE_INVERSE_TRANSFORM](foc_data);
+    foc_data->m_mode = MOTOR_RUN;
+}
+
+// 位置环(rad)
+void Position_Control(foc_handler *foc_data)
+{
+    //foc_data->pos_loop.kp = 1.0f;
+    foc_data->pos_loop.real_pos = foc_data->angle_norm_deg;
+    foc_data->pos_loop.error_pos = foc_data->pos_loop.target_pos - foc_data->pos_loop.real_pos;
+    foc_data->uq = foc_data->pos_loop.kp * foc_data->pos_loop.error_pos;
 }
