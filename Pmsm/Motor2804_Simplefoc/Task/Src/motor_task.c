@@ -1,5 +1,6 @@
 #include "motor_task.h"
 #include "bsp_foc.h"
+#include "bsp_adc.h"
 
 foc_handler foc_data_handler;
 
@@ -12,6 +13,7 @@ void Motor_Task(void const *argument)
     {
         if (foc_data_handler.m_mode == MOTOR_RUN)
             open_loop_speed_control(&foc_data_handler);
+            //close_loop_curr_control(&foc_data_handler);
         else
             Start_Up(&foc_data_handler);
         osDelay(1);

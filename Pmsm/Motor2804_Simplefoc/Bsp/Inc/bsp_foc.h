@@ -8,6 +8,7 @@
 #include "stdint.h"
 #include "stdlib.h"
 #include "tim.h"
+#include "adc.h"
 
 #define FOC_FUNC_NUM 5          // FOC 定义的功能回调函数数量
 #define _1_SQRT3 0.57735026919f // 1/sqrt(3)
@@ -109,5 +110,6 @@ extern void open_loop_speed_control(foc_handler *foc_data);
 extern void Start_Up(foc_handler *foc_data);
 extern void Position_Control(foc_handler *foc_data);
 extern void Speed_Control(foc_handler *foc_data);
+extern float Limit_up_and_down(float input, float limit_down, float limit_up);
 
 #endif // !_BSP_FOC_H_

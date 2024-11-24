@@ -2,12 +2,15 @@
 #include "bsp_foc.h"
 #include "bsp_usart.h"
 #include "bsp_cmd.h"
+#include "bsp_adc.h"
 
 void Logger_Task(void const *argument)
 {
     USART_Init();
     for (;;)
     {
+        // Get_ADC_Current(&foc_data_handler);
+        // printf("Ia = %0.2f, Ib = %0.2f, Ic = %0.2f\r\n", bsp_adc.Ia, bsp_adc.Ib, bsp_adc.Ic);
         cmd();
         osDelay(500);
     }

@@ -4,6 +4,7 @@
  */
 #include "bsp_foc.h"
 #include "bsp_as5600.h"
+#include "bsp_adc.h"
 
 foc_callbak foc_func[FOC_FUNC_NUM]; // 回调函数数组
 
@@ -22,7 +23,7 @@ foc_callbak foc_transform[] = {
 };
 
 // 返回(limit_down,limit_up)间值
-static float Limit_up_and_down(float input, float limit_down, float limit_up)
+float Limit_up_and_down(float input, float limit_down, float limit_up)
 {
     float output = 0;
     output = (input < limit_down) ? limit_down : ((input > limit_up) ? limit_up : input);
@@ -88,6 +89,10 @@ void Set_SVPWM(foc_handler *foc_data)
 // TIM PWM初始化
 void TIM1_PWM_Init(void)
 {
+    HAL_ADCEx_InjectedStart(&hadc1); // 注入通道启动
+    // HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_1); // 获取注入通道值
+    // HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_2);
+
     // HAL_TIM_Base_Start(&htim1);
     HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
     HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
@@ -97,6 +102,11 @@ void TIM1_PWM_Init(void)
     HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_1); // 启动 PWM 通道1 互补信号输出
     HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_2); // 启动 PWM 通道2 互补信号输出
     HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_3); // 启动 PWM 通道1 互补信号输出
+
+    // CC4触发ADC采样
+    HAL_TIM_OC_Start(&htim1, TIM_CHANNEL_4);
+    HAL_TIM_OC_Start_IT(&htim1, TIM_CHANNEL_4);
+
     __HAL_TIM_MOE_ENABLE(&htim1);
     HAL_TIM_Base_Start(&htim1);
 }

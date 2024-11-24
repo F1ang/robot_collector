@@ -19,6 +19,8 @@
         "freertos.h": "c",
         "task.h": "c",
         "bsp_cmd.h": "c",
-        "gpio.h": "c"
+        "gpio.h": "c",
+        "bsp_as5600.h": "c",
+        "bsp_adc.h": "c"
     }
 }

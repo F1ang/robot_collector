@@ -2,6 +2,7 @@
 #include "bsp_cmd.h"
 #include <cstring>
 #include <stdlib.h>
+#include "bsp_adc.h"
 
 #define LOG_TAG "CMD"
 #include "bsp_log.h"
@@ -126,7 +127,7 @@ void help(void)
     printf("help                 ----------     Help list\r\n");
     printf("debug_on             ----------     Show debug messages\r\n");
     printf("debug_off            ----------     Don't show debug messages\r\n");
-    printf("show_encoder         ----------     Show mpu6050 Pitch Roll Yaw\r\n");
+    printf("show_encoder         ----------     Show as5600\r\n");
     printf("show_foc             ----------     Show foc data\r\n");
     printf("set_uqud             ----------     Set uq ud value\r\n");
     printf("set_pos              ----------     Set position loop\r\n");
@@ -151,7 +152,7 @@ void show_encoder(void)
     while (1)
     {
         cmd_exit();
-
+        printf("debug_off, elog_set_filter_lvl: ELOG_LVL_INFO\r\n");
         osDelay(20);
     }
 }
@@ -162,7 +163,7 @@ void show_foc(void)
     {
 
         cmd_exit();
-
+        printf("uq = %0.2f, iq_ref = %0.2f, iq_meas = %0.2f\r\n", foc_data_handler.uq, bsp_adc.iq_ref, bsp_adc.iq_meas);
         osDelay(20);
     }
 }
@@ -199,6 +200,11 @@ void set_speed(void)
     // 上位机参数:1 0 -8
     foc_data_handler.speed_loop.target_speed = (int16_t)(atof(buf[1])); // 单位rad/s    1 0 -8
     foc_data_handler.speed_loop.kp = -(float)(atof(buf[3])) / 10;
+
+    // 上位机参数:set_speed 3 -8 0.002
+    // bsp_adc.iq_ref = (float)(atof(buf[1])); // 单位0.1A
+    // bsp_adc.kp = (float)(atof(buf[2])) / 10;
+    // bsp_adc.ki = (float)(atof(buf[3])) / 10;
 
     printf("\t[%.2f]\t[%.2f]\t[%.1f]\t\r\n",
            atof(buf[1]),
