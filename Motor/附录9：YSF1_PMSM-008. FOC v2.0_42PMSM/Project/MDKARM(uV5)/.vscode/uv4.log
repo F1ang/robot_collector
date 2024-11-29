@@ -1,0 +1,8 @@
+*** Using Compiler 'V5.06 update 7 (build 960)', folder: 'D:\Package_Install\Keil5\ARM\ARMCC\Bin'
+Build target 'YS-F1PRO'
+After Build - User command #1: CopyHex_Flash.bat
+
+d:\Robot_Study\2,View_Moduls\硬石电机\无刷+永磁同步驱动板\0. 硬石电机控制专题指导手册\硬石电机控制专题指导手册\附件：硬石电机控制专题指导手册\附录9：YSF1_PMSM-008. FOC v2.0_42PMSM\Project\MDKARM(uV5)>copy Objects\YS-F1PRO.hex YS-F1PRO.hex 
+已复制         1 个文件。
+".\Objects\YS-F1PRO.axf" - 0 Error(s), 0 Warning(s).
+Build Time Elapsed:  00:00:21
