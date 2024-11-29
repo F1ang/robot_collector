@@ -1,0 +1,26 @@
+{
+    "files.associations": {
+        "math.h": "c",
+        "arm_common_tables.h": "c",
+        "arm_math.h": "c",
+        "stdint.h": "c",
+        "bsp_foc.h": "c",
+        "cmsis_os.h": "c",
+        "stm32f4xx_hal.h": "c",
+        "stdlib.h": "c",
+        "bsp_dwt.h": "c",
+        "tim.h": "c",
+        "main.h": "c",
+        "stm32f4xx_hal_conf.h": "c",
+        "stm32f4xx_hal_tim.h": "c",
+        "logger_task.h": "c",
+        "bsp_usart.h": "c",
+        "usart.h": "c",
+        "freertos.h": "c",
+        "task.h": "c",
+        "bsp_cmd.h": "c",
+        "gpio.h": "c",
+        "bsp_as5600.h": "c",
+        "bsp_adc.h": "c"
+    }
+}
