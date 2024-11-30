@@ -1,1 +1,0 @@
-copy Objects\YS-F1PRO.hex YS-F1PRO.hex
