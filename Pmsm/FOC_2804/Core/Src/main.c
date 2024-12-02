@@ -121,7 +121,7 @@ int main(void)
     bsp_as5600Init();
     HAL_Delay(1000);
 
-    // printf("FOC2804 Application\r\n");
+    //printf("FOC2804 Application\r\n");
     USART_Init();
 
     foc_data_handler.m_dir = MOTOR_CW;
