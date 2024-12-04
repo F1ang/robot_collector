@@ -546,6 +546,13 @@ void SVPWM_Control(foc_handler *foc_data)
     Foc_Svpwm(foc_data, PWM_FREQ, 11.0f);
 }
 
+// FOC控制
+void FOC_Control(foc_handler *foc_data)
+{
+    // electrical angle
+    Get_Elec_Angle(foc_data);
+}
+
 /* TIM Update event */
 uint32_t tim1_uptate_over = 0, tim6_uptate_over = 0; // 溢出计数
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
