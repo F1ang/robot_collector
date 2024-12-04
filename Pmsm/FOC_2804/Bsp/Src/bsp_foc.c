@@ -118,14 +118,14 @@ void TIM1_PWM_Init(void)
     HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_3); // 启动 PWM 通道1 互补信号输出
 
     __HAL_TIM_MOE_ENABLE(&htim1);
-    // HAL_TIM_Base_Start_IT(&htim1); // update interrupt event
-
     Start_Up(&foc_data_handler);
+
+    HAL_TIM_Base_Start_IT(&htim1); // update interrupt event
+    HAL_TIM_Base_Start_IT(&htim6);
 
     // CC4触发ADC采样
     HAL_ADCEx_InjectedStart(&hadc1); // 注入通道启动
     HAL_ADCEx_InjectedStart_IT(&hadc1);
-    HAL_TIM_Base_Start_IT(&htim6);
 }
 //--------------------------------------------------------------
 
@@ -528,7 +528,7 @@ void Foc_Svpwm(foc_handler *foc_data, float Ts_pwn, float Udc_tem)
     TIM1->CCR1 = Tcmp1;
     TIM1->CCR2 = Tcmp2;
     TIM1->CCR3 = Tcmp3;
-    TIM1->CCR4 = 5250 - 2;
+    TIM1->CCR4 = 5250 / 2;
 }
 
 // SVPWM控制
@@ -554,6 +554,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     {
         if (tim1_uptate_over < 0xFFFFFFFF)
             tim1_uptate_over++;
+        HAL_GPIO_WritePin(GPIOE, GPIO_PIN_0, GPIO_PIN_SET);
+        HAL_GPIO_WritePin(GPIOE, GPIO_PIN_0, GPIO_PIN_RESET);
+        HAL_ADCEx_InjectedStart_IT(&hadc1);
     }
     if (htim->Instance == TIM6)
     {

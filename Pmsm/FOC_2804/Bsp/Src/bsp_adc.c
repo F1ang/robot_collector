@@ -65,7 +65,7 @@ void HAL_ADCEx_InjectedConvCpltCallback(ADC_HandleTypeDef *hadc)
         HAL_ADCEx_InjectedStop_IT(&hadc1);
         Get_ADC_Current(&foc_data_handler);
         SVPWM_Control(&foc_data_handler);
-        HAL_TIM_Base_Start(&htim1);
-        HAL_ADCEx_InjectedStart_IT(&hadc1);
+        HAL_GPIO_WritePin(GPIOE, GPIO_PIN_1, GPIO_PIN_SET);
+        HAL_GPIO_WritePin(GPIOE, GPIO_PIN_1, GPIO_PIN_RESET);
     }
 }

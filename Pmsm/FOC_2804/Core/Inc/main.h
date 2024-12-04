@@ -73,6 +73,10 @@ void Error_Handler(void);
 #define PV_H_GPIO_Port GPIOE
 #define PW_H_Pin GPIO_PIN_13
 #define PW_H_GPIO_Port GPIOE
+#define OUT1_Pin GPIO_PIN_0
+#define OUT1_GPIO_Port GPIOE
+#define OUT2_Pin GPIO_PIN_1
+#define OUT2_GPIO_Port GPIOE
 
 /* USER CODE BEGIN Private defines */
 
