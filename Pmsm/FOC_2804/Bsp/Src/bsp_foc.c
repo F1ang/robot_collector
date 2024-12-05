@@ -293,6 +293,7 @@ void Foc_Svpwm(foc_handler *foc_data, float Ts_pwn, float Udc_tem)
     default:
         break;
     }
+    foc_data->sector = sector;
 
     /* 2、矢量作用总时间 */
     switch (sector)
@@ -546,11 +547,62 @@ void SVPWM_Control(foc_handler *foc_data)
     Foc_Svpwm(foc_data, PWM_FREQ, 11.0f);
 }
 
+// 相电流
+void Get_Ia_Ib(foc_handler *foc_data)
+{
+    if (foc_data->sector == 0)
+        return;
+    switch (foc_data->sector)
+    {
+    case 4:
+    case 5: // Current on Phase C not accessible
+        foc_data->ia = (float)HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_1) / 32768 * 3.3f;
+        foc_data->ib = (float)HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_2) / 32768 * 3.3f;
+        break;
+
+    case 6:
+    case 1: // Current on Phase A not accessible
+        foc_data->ib = (float)HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_2) / 32768 * 3.3f;
+        foc_data->ic = (float)HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_3) / 32768 * 3.3f;
+        foc_data->ia = -foc_data->ib - foc_data->ic;
+        break;
+
+    case 2:
+    case 3: // Current on Phase B not accessible
+        foc_data->ia = (float)HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_1) / 32768 * 3.3f;
+        foc_data->ic = (float)HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_3) / 32768 * 3.3f;
+        foc_data->ib = -foc_data->ia - foc_data->ic;
+        break;
+    default:
+        break;
+    }
+}
+
 // FOC控制
 void FOC_Control(foc_handler *foc_data)
 {
-    // electrical angle
+    // electrical angle -- hall->dpp
     Get_Elec_Angle(foc_data);
+
+    // ia ib
+    Get_Ia_Ib(foc_data);
+
+    // clark ia、ib->i_alpha,i_beta
+    foc_transform[CLARKE_TRANSFORM](foc_data);
+    // Park i_alpha,i_beta->i_abc
+    foc_transform[PARK_TRANSFORM](foc_data);
+
+    // uq、ud
+    // Current_Control(foc_data);
+
+    // circle limitation
+    // Circle_Limitation(foc_data);
+
+    // inv park ud,uq->u_alpha,u_beta
+    foc_transform[PARK_INVERSE_TRANSFORM](foc_data);
+
+    // SVPWM
+    Foc_Svpwm(foc_data, PWM_FREQ, 11.0f);
 }
 
 /* TIM Update event */

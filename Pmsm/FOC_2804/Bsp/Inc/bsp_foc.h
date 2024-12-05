@@ -77,6 +77,7 @@ typedef struct
     float angle_last, circle_num, angle_delta;
     float elec_angle;
     float angle_offset; // 机械角度偏移
+    uint8_t sector;     // 扇区号
 
     float voltage_power_offset; // 电压偏置,SPWM波无负值
     float speed;
