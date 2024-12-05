@@ -385,4 +385,12 @@ ex:假如我们要求中心对称PWM对的频率是8K，那么他非中心对称
 8、堵转保护:20ms无HALL跳变
 9、比如dpp一开始单位是（整形角度/s），那么θ_dpp+=dpp*Δt，程序对这个乘法进行了分布处理，实际等效是把dpp的单位整成（整形角度/每中断周期），
 所以在霍尔中断里θ_dpp+=dpp而无需继续乘以Δt
-10、
+
+10、双ADC采样->32768=3.3V   
+11、TIM区别更新事件及其触发的TRGO、更新中断
+12、hz转子电频率=pole*w_机械->x60=rpm转速(圈/min)  dpp=每控制周期的角度变化量(hz<->dpp公式转换)
+13、转速:转子电频率dpp、rmp
+14、前提:2pi=>65535   hall cc1 interrupt->hElectrical_Angle校准、FOC周期补偿->调psc改变计数精度(溢出++,捕获值及计数频率低阈值--)->预装载与更新的滞后性要特别处理
+15、转子电频率dpp->hall捕获->hall cc1 interrupt->psc过大/速度低于阈值/首次捕获,清零   最低转速--HALL最大定时器周期
+hall cc1 interrupt->控制周期内的理论脉冲个数->dpp转速hRotorFreq_dpp(控制周期)
+16、hElectrical_Angle 控制周期 补偿->hRotorFreq_dpp
