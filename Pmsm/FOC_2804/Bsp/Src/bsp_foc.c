@@ -3,8 +3,8 @@
  * @Description: Excellent Day
  */
 #include "bsp_foc.h"
-#include "bsp_as5600.h"
 #include "bsp_adc.h"
+#include "bsp_as5600.h"
 
 foc_callbak foc_func[FOC_FUNC_NUM]; // 回调函数数组
 
@@ -270,8 +270,7 @@ void Foc_Svpwm(foc_handler *foc_data, float Ts_pwn, float Udc_tem)
     C = (U3 > 0) ? 1 : 0;
     N = 4 * C + 2 * B + A;
 
-    switch (N)
-    {
+    switch (N) {
     case 3:
         sector = 1;
         break;
@@ -296,8 +295,7 @@ void Foc_Svpwm(foc_handler *foc_data, float Ts_pwn, float Udc_tem)
     foc_data->sector = sector;
 
     /* 2、矢量作用总时间 */
-    switch (sector)
-    {
+    switch (sector) {
     case 1:
         Tx = K * U2; // 7段式SVPWM中 U4先作用,后U6
         Ty = K * U1;
@@ -327,8 +325,7 @@ void Foc_Svpwm(foc_handler *foc_data, float Ts_pwn, float Udc_tem)
     }
 
     // 过调制处理
-    if ((Tx + Ty) > Ts_pwn)
-    {
+    if ((Tx + Ty) > Ts_pwn) {
         Tx = Tx * Ts_pwn / (Tx + Ty);
         Ty = Ty * Ts_pwn / (Tx + Ty);
     }
@@ -340,8 +337,7 @@ void Foc_Svpwm(foc_handler *foc_data, float Ts_pwn, float Udc_tem)
     Tc = Tb + Ty / 2;
 
     /* 3、SVPWM控制 */
-    switch (sector)
-    {
+    switch (sector) {
     case 1:
         Tcmp1 = Ta; // 第一个PWM=CCR1对应的 导通时刻(!!!PWM1!!!),扇区1对应Ta
         Tcmp2 = Tb;
@@ -358,17 +354,14 @@ void Foc_Svpwm(foc_handler *foc_data, float Ts_pwn, float Udc_tem)
         // 反之上桥臂最快导通的时刻为Ta(7段式特性=此相导通最长),以最长导通的中心时刻分析ADC采样点
         if ((uint16_t)(PWM_PERIOD - Tcmp1) > TW_AFTER) // 情况1
             Tcmp4 = PWM_PERIOD - 1;                    // CCR4中心对齐模式!!!PWM2!!!
-        else
-        {
+        else {
             // 已无法在PWM_PERIOD中心点采样,A导通只能前后采样
             hDeltaDuty = (uint16_t)(Tcmp1 - Tcmp2);              // A B相在扇区1,上桥臂均有导通时间
             if (hDeltaDuty > (uint16_t)(PWM_PERIOD - Tcmp1) * 2) // 情况3:B相上桥臂先导通于A相,在A相导通前Ts采样
             {
                 // B超前A(即C也超前A),触发在A导通前采样(即A相下桥臂导通前)
                 Tcmp4 = Tcmp1 - TW_BEFORE; // Ts before Phase A
-            }
-            else
-            {
+            } else {
                 // (PWM_PERIOD-Tcmp1)*2,足够采样
                 Tcmp4 = Tcmp1 + TW_AFTER; // 情况2:A相上桥臂导通后,B、C相上桥臂导通前采样
                 if (Tcmp4 >= PWM_PERIOD)  // 情况4:不可在A下桥臂导通或者之前采样
@@ -391,16 +384,13 @@ void Foc_Svpwm(foc_handler *foc_data, float Ts_pwn, float Udc_tem)
         // 扇区2,不在B相采样(B上桥臂导通最长)
         if ((uint16_t)(PWM_PERIOD - Tcmp2) > TW_AFTER) // 情况1
             Tcmp4 = PWM_PERIOD - 1;                    // CCR4中心对齐模式PWM2
-        else
-        {
+        else {
             // 已无法在PWM_PERIOD中心点采样,B导通只能前后采样
             hDeltaDuty = (uint16_t)(Tcmp2 - Tcmp1);
             if (hDeltaDuty > (uint16_t)(PWM_PERIOD - Tcmp2) * 2) // 情况3
             {
                 Tcmp4 = Tcmp2 - TW_BEFORE; // Ts before Phase B
-            }
-            else
-            {
+            } else {
                 Tcmp4 = Tcmp2 + TW_AFTER; // 情况2   DT + Tn after Phase B
                 if (Tcmp4 >= PWM_PERIOD)  // 情况4(不可在A下桥臂导通或者之前采样)
                 {
@@ -419,16 +409,13 @@ void Foc_Svpwm(foc_handler *foc_data, float Ts_pwn, float Udc_tem)
         // 扇区3,不在B相采样(B上桥臂导通最长)
         if ((uint16_t)(PWM_PERIOD - Tcmp2) > TW_AFTER) // 情况1
             Tcmp4 = PWM_PERIOD - 1;                    // CCR4中心对齐模式PWM2
-        else
-        {
+        else {
             // 已无法在PWM_PERIOD中心点采样,B导通只能前后采样
             hDeltaDuty = Tcmp2 - Tcmp3;
             if (hDeltaDuty > (uint16_t)(PWM_PERIOD - Tcmp2) * 2) // 情况3
             {
                 Tcmp4 = Tcmp2 - TW_BEFORE; // Ts before Phase B
-            }
-            else
-            {
+            } else {
                 Tcmp4 = Tcmp2 + TW_AFTER; // 情况2  DT + Tn after Phase B
                 if (Tcmp4 >= PWM_PERIOD)  // 情况4(不可在A下桥臂导通或者之前采样)
                 {
@@ -447,16 +434,13 @@ void Foc_Svpwm(foc_handler *foc_data, float Ts_pwn, float Udc_tem)
         // 扇区4,不在C相采样(C上桥臂导通最长)
         if ((uint16_t)(PWM_PERIOD - Tcmp3) > TW_AFTER) // 情况1
             Tcmp4 = PWM_PERIOD - 1;                    // CCR4中心对齐模式PWM2
-        else
-        {
+        else {
             // 已无法在PWM_PERIOD中心点采样,C导通只能前后采样
             hDeltaDuty = Tcmp3 - Tcmp2;
             if (hDeltaDuty > (uint16_t)(PWM_PERIOD - Tcmp3) * 2) // 情况3
             {
                 Tcmp4 = Tcmp3 - TW_BEFORE; // Ts before Phase C
-            }
-            else
-            {
+            } else {
                 Tcmp4 = Tcmp3 + TW_AFTER; // 情况2   DT + Tn after Phase C
                 if (Tcmp4 >= PWM_PERIOD)  // 情况4(不可在A下桥臂导通或者之前采样)
                 {
@@ -475,16 +459,13 @@ void Foc_Svpwm(foc_handler *foc_data, float Ts_pwn, float Udc_tem)
         // 扇区5,不在C相采样(C上桥臂导通最长)
         if ((uint16_t)(PWM_PERIOD - Tcmp3) > TW_AFTER) // 情况1
             Tcmp4 = PWM_PERIOD - 1;                    // CCR4中心对齐模式PWM2
-        else
-        {
+        else {
             // 已无法在PWM_PERIOD中心点采样,B导通只能前后采样
             hDeltaDuty = Tcmp3 - Tcmp1;
             if (hDeltaDuty > (uint16_t)(PWM_PERIOD - Tcmp3) * 2) // 情况3
             {
                 Tcmp4 = Tcmp3 - TW_BEFORE; // Ts before Phase C
-            }
-            else
-            {
+            } else {
                 Tcmp4 = Tcmp3 + TW_AFTER; // 情况2  DT + Tn after Phase C
                 if (Tcmp4 >= PWM_PERIOD)  // 情况4(不可在A下桥臂导通或者之前采样)
                 {
@@ -503,16 +484,13 @@ void Foc_Svpwm(foc_handler *foc_data, float Ts_pwn, float Udc_tem)
         // 扇区5,不在A相采样(A上桥臂导通最长)
         if ((uint16_t)(PWM_PERIOD - Tcmp1) > TW_AFTER) // 情况1
             Tcmp4 = PWM_PERIOD - 1;                    // CCR4中心对齐模式PWM2
-        else
-        {
+        else {
             // 已无法在PWM_PERIOD中心点采样,C导通只能前后采样
             hDeltaDuty = Tcmp1 - Tcmp3;
             if (hDeltaDuty > (uint16_t)(PWM_PERIOD - Tcmp1) * 2) // 情况3
             {
                 Tcmp4 = Tcmp1 - TW_BEFORE; // Ts before Phase A
-            }
-            else
-            {
+            } else {
                 Tcmp4 = Tcmp1 + TW_AFTER; // 情况2 DT + Tn after Phase A
                 if (Tcmp4 >= PWM_PERIOD)  // 情况4(不可在A下桥臂导通或者之前采样)
                 {
@@ -552,12 +530,12 @@ void Get_Ia_Ib(foc_handler *foc_data)
 {
     if (foc_data->sector == 0)
         return;
-    switch (foc_data->sector)
-    {
+    switch (foc_data->sector) {
     case 4:
     case 5: // Current on Phase C not accessible
         foc_data->ia = (float)HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_1) / 32768 * 3.3f;
         foc_data->ib = (float)HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_2) / 32768 * 3.3f;
+        foc_data->ic = -foc_data->ia - foc_data->ib;
         break;
 
     case 6:
@@ -574,7 +552,41 @@ void Get_Ia_Ib(foc_handler *foc_data)
         foc_data->ib = -foc_data->ia - foc_data->ic;
         break;
     default:
+        foc_data->ia = 0;
+        foc_data->ib = 0;
+        foc_data->ic = 0;
         break;
+    }
+}
+
+// 转矩环(电流环)
+void Current_Control(foc_handler *foc_data)
+{
+    float error_id = 0, error_iq = 0;
+    foc_data->tq_loop.kp = 2;
+    foc_data->tq_loop.target_torque = 2;
+
+    foc_data->tq_loop.real_torque = foc_data->iq;
+
+    error_iq = foc_data->tq_loop.target_torque - foc_data->tq_loop.real_torque;
+    foc_data->uq = foc_data->tq_loop.kp * error_iq;
+
+    error_id = foc_data->tq_loop.target_flux - foc_data->tq_loop.real_flux;
+    foc_data->ud = foc_data->tq_loop.kp_flux * error_id;
+}
+
+// 过调制
+#define MMI 0.95
+#define R1  32768
+#define R2  MMI *R1
+void Circle_Limitation(foc_handler *foc_data)
+{
+    float V_temp = 0, temp = 0;
+
+    V_temp = foc_data->uq * foc_data->uq + foc_data->ud * foc_data->ud;
+    if (V_temp > R2 * R2) { // 过调制
+        foc_data->uq = foc_data->uq * R2 / (V_temp / 32768);
+        foc_data->ud = foc_data->ud * R2 / (V_temp / 32768);
     }
 }
 
@@ -587,16 +599,19 @@ void FOC_Control(foc_handler *foc_data)
     // ia ib
     Get_Ia_Ib(foc_data);
 
-    // clark ia、ib->i_alpha,i_beta
-    foc_transform[CLARKE_TRANSFORM](foc_data);
-    // Park i_alpha,i_beta->i_abc
-    foc_transform[PARK_TRANSFORM](foc_data);
+    // // clark ia、ib->i_alpha,i_beta
+    // foc_transform[CLARKE_TRANSFORM](foc_data);
+    // // Park i_alpha,i_beta->i_q i_d
+    // foc_transform[PARK_TRANSFORM](foc_data);
 
-    // uq、ud
+    // // uq、ud
     // Current_Control(foc_data);
 
-    // circle limitation
+    // // circle limitation
     // Circle_Limitation(foc_data);
+
+    // 开环
+    foc_data->uq = 2;
 
     // inv park ud,uq->u_alpha,u_beta
     foc_transform[PARK_INVERSE_TRANSFORM](foc_data);
@@ -609,16 +624,14 @@ void FOC_Control(foc_handler *foc_data)
 uint32_t tim1_uptate_over = 0, tim6_uptate_over = 0; // 溢出计数
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-    if (htim->Instance == TIM1)
-    {
+    if (htim->Instance == TIM1) {
         if (tim1_uptate_over < 0xFFFFFFFF)
             tim1_uptate_over++;
         HAL_GPIO_WritePin(GPIOE, GPIO_PIN_0, GPIO_PIN_SET);
         HAL_GPIO_WritePin(GPIOE, GPIO_PIN_0, GPIO_PIN_RESET);
         HAL_ADCEx_InjectedStart_IT(&hadc1);
     }
-    if (htim->Instance == TIM6)
-    {
+    if (htim->Instance == TIM6) {
         if (tim6_uptate_over < 0xFFFFFFFF)
             tim6_uptate_over++;
     }

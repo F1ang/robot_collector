@@ -1,11 +1,11 @@
-#include "main.h"
 #include "bsp_cmd.h"
+#include "bsp_adc.h"
+#include "main.h"
 #include <cstring>
 #include <stdlib.h>
-#include "bsp_adc.h"
 
-#define SCB_AIRCR (*(volatile unsigned long *)0xE000ED0C) /* Reset control Address Register */
-#define SCB_RESET_VALUE 0x05FA0004                        /* Reset value, write to SCB_AIRCR can reset cpu */
+#define SCB_AIRCR       (*(volatile unsigned long *)0xE000ED0C) /* Reset control Address Register */
+#define SCB_RESET_VALUE 0x05FA0004                              /* Reset value, write to SCB_AIRCR can reset cpu */
 
 extern foc_handler foc_data_handler;
 
@@ -26,8 +26,7 @@ void split(char *src, const char *separator, char **dest, int *num)
     char *strtok(char *str, const char *delim);
     // 获得第一个由分隔符分割的字符串
     pNext = strtok(src, separator);
-    while (pNext != NULL)
-    {
+    while (pNext != NULL) {
         // 存入到目的字符串数组中
         *dest++ = pNext;
         ++count;
@@ -43,69 +42,42 @@ int CMD_Flag = 0;
 // 接收串口中断
 void cmd(void)
 {
-    if (CMD_Flag)
-    {
+    if (CMD_Flag) {
         CMD_Flag = 0;
-    }
-    else
-    {
+    } else {
         return;
     }
 
     printf("cmd> ");
-    if (!strcmp(CMD_Buffer, "hi"))
-    {
+    if (!strcmp(CMD_Buffer, "hi")) {
         printf("hi there~\r\n");
-    }
-    else if (!strcmp(CMD_Buffer, "reboot"))
-    {
+    } else if (!strcmp(CMD_Buffer, "reboot")) {
         reboot();
-    }
-    else if (!strcmp(CMD_Buffer, "help"))
-    {
+    } else if (!strcmp(CMD_Buffer, "help")) {
         help();
-    }
-    else if (!strcmp(CMD_Buffer, "debug_on"))
-    {
+    } else if (!strcmp(CMD_Buffer, "debug_on")) {
         debug_on();
-    }
-    else if (!strcmp(CMD_Buffer, "debug_off"))
-    {
+    } else if (!strcmp(CMD_Buffer, "debug_off")) {
         debug_off();
-    }
-    else if (!strcmp(CMD_Buffer, "show_encoder"))
-    {
+    } else if (!strcmp(CMD_Buffer, "show_encoder")) {
         show_encoder();
-    }
-    else if (!strcmp(CMD_Buffer, "show_foc"))
-    {
+    } else if (!strcmp(CMD_Buffer, "show_foc")) {
         show_foc();
-    }
-    else if (!strcmp(CMD_Buffer, "set_uqud"))
-    {
+    } else if (!strcmp(CMD_Buffer, "set_uqud")) {
         set_uqud();
-    }
-    else if (!strcmp(CMD_Buffer, "set_pos"))
-    {
+    } else if (!strcmp(CMD_Buffer, "set_pos")) {
         set_pos();
-    }
-    else if (strstr(CMD_Buffer, "set_pid"))
-    {
+    } else if (strstr(CMD_Buffer, "set_pid")) {
         set_pid();
-    }
-    else if (strstr(CMD_Buffer, "set_speed"))
-    {
+    } else if (strstr(CMD_Buffer, "set_speed")) {
         set_speed();
-    }
-    else
-    {
+    } else {
         printf("unknown cmd '%s'\r\n", CMD_Buffer);
         help();
     }
 
     // 缓存区清零
-    for (int i = CMD_Buffer_Count; i >= 0; i--)
-    {
+    for (int i = CMD_Buffer_Count; i >= 0; i--) {
         CMD_Buffer[i] = 0;
     }
     CMD_Buffer_Count = 0;
@@ -169,7 +141,7 @@ void set_speed(void)
     int num = 0;
     split(CMD_Buffer, " ", buf, &num);
 
-    foc_data_handler.uq = (int16_t)(atof(buf[2]));
+    // foc_data_handler.uq = (int16_t)(atof(buf[2]));
 
     // 上位机参数:5 0 70
     // foc_data_handler.pos_loop.target_pos = (int16_t)(atof(buf[1])); // 单位rad
@@ -183,6 +155,11 @@ void set_speed(void)
     // bsp_adc.iq_ref = (float)(atof(buf[1])); // 单位0.1A
     // bsp_adc.kp = (float)(atof(buf[2])) / 10;
     // bsp_adc.ki = (float)(atof(buf[3])) / 10;
+
+    // svpwm
+    foc_data_handler.tq_loop.kp = (float)(atof(buf[1])) / 10;
+    foc_data_handler.tq_loop.kp_flux = 0;
+    foc_data_handler.tq_loop.target_torque = (float)(atof(buf[2])); // 单位0.1A
 
     printf("\t[%.2f]\t[%.2f]\t[%.1f]\t\r\n",
            atof(buf[1]),

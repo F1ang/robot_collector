@@ -200,6 +200,11 @@
           <WinNumber>1</WinNumber>
           <ItemText>tim6_uptate_over,0x0A</ItemText>
         </Ww>
+        <Ww>
+          <count>9</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>foc_data</ItemText>
+        </Ww>
       </WatchWindow1>
       <Tracepoint>
         <THDelay>0</THDelay>

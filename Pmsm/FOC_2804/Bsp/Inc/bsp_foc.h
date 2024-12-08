@@ -1,67 +1,69 @@
 #ifndef _BSP_FOC_H_
 #define _BSP_FOC_H_
 
-#include "stm32f4xx_hal.h"
-#include "bsp_dwt.h"
+#include "adc.h"
 #include "arm_math.h"
-#include <math.h>
+#include "bsp_dwt.h"
 #include "stdint.h"
 #include "stdlib.h"
+#include "stm32f4xx_hal.h"
 #include "tim.h"
-#include "adc.h"
+#include <math.h>
 
-#define FOC_FUNC_NUM 5          // FOC 定义的功能回调函数数量
-#define _1_SQRT3 0.57735026919f // 1/sqrt(3)
-#define _2_SQRT3 1.15470053838f // 2/sqrt(3)
-#define SQRT3 1.73205080757f    // sqrt(3)
-#define SQRT3_2 0.86602540378f  // sqrt(3)/2
+#define FOC_FUNC_NUM 5              // FOC 定义的功能回调函数数量
+#define _1_SQRT3     0.57735026919f // 1/sqrt(3)
+#define _2_SQRT3     1.15470053838f // 2/sqrt(3)
+#define SQRT3        1.73205080757f // sqrt(3)
+#define SQRT3_2      0.86602540378f // sqrt(3)/2
 
 #define VOLTAGE_POWER_LIMIT 12.0f // 电压功率限制,单位:V
-#define PAIRS_OF_POLES 7          // 电机的对数对数
+#define PAIRS_OF_POLES      7     // 电机的对数对数
 
-#define PI_VALUE 3.14159265358979323846f
+#define PI_VALUE   3.14159265358979323846f
 #define DEG2RAD(x) (x * PI_VALUE / 180.0f)
-#define ABS_X(x) ((x) < 0 ? -(x) : (x))
+#define ABS_X(x)   ((x) < 0 ? -(x) : (x))
 
 #define START_UP_UQ 3.0f // 启动时Uq
 
-#define CKTIM 168000000
-#define PWM_FREQ 16000
-#define PWM_PRSC 0
+#define CKTIM      168000000
+#define PWM_FREQ   16000
+#define PWM_PRSC   0
 #define PWM_PERIOD CKTIM / (2 * PWM_FREQ * (PWM_PRSC + 1))
 
-#define DEADTIME_NS 1000                                                      // DT
-#define MAX_TNTR_NS 1550                                                      // TN
-#define TW_AFTER ((uint16_t)(((DEADTIME_NS + MAX_TNTR_NS) * 168uL) / 1000ul)) // DT+TN
+#define DEADTIME_NS 1000                                                         // DT
+#define MAX_TNTR_NS 1550                                                         // TN
+#define TW_AFTER    ((uint16_t)(((DEADTIME_NS + MAX_TNTR_NS) * 168uL) / 1000ul)) // DT+TN
 
 #define SAMPLING_TIME_NS 700
-#define TW_BEFORE (((uint16_t)(((((uint16_t)(SAMPLING_TIME_NS))) * 168uL) / 1000ul)) + 1)
+#define TW_BEFORE        (((uint16_t)(((((uint16_t)(SAMPLING_TIME_NS))) * 168uL) / 1000ul)) + 1)
 
-typedef enum
-{
+typedef enum {
     MOTOR_START_UP = 0, // 预定位
     MOTOR_RUN = 1,      // 运行
 } MOTOR_MODE;
 
-typedef enum
-{
+typedef enum {
     MOTOR_CW = -1, // 正转
     MOTOR_CCW = 1,
 } MOTOR_DIR;
 
-typedef struct
-{
+typedef struct {
     float kp, ki, kd;
     float target_pos, real_pos;
     float error_pos, error_pos_last;
 } position_loop;
 
-typedef struct
-{
+typedef struct {
     float kp, ki, kd;
     float target_speed, real_speed;
     float error_speed, error_speed_last;
 } speed_loop;
+
+typedef struct {
+    float kp, ki, kd, kp_flux, ki_flux, kd_flux;
+    float target_torque, real_torque, target_flux, real_flux;
+    float error_torque, error_torque_last;
+} torque_loop;
 
 typedef struct
 {
@@ -90,18 +92,17 @@ typedef struct
     MOTOR_DIR m_dir;
     position_loop pos_loop;
     speed_loop speed_loop;
+    torque_loop tq_loop;
 } foc_handler;
 
-enum foc_transform_list
-{
+enum foc_transform_list {
     CLARKE_TRANSFORM = 0,
     CLARKE_INVERSE_TRANSFORM,
     PARK_TRANSFORM,
     PARK_INVERSE_TRANSFORM
 };
 
-typedef enum
-{
+typedef enum {
     SET_SVPWM_FUNC = 0,
     READ_CURR_FUNC,
     READ_ANGLE_FUNC,
@@ -126,5 +127,5 @@ extern void Speed_Control(foc_handler *foc_data);
 extern float Limit_up_and_down(float input, float limit_down, float limit_up);
 extern void Foc_Svpwm(foc_handler *foc_data, float Ts_pwn, float Udc_tem);
 extern void SVPWM_Control(foc_handler *foc_data);
-
+extern void FOC_Control(foc_handler *foc_data);
 #endif // !_BSP_FOC_H_

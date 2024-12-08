@@ -58,13 +58,13 @@ uint32_t adc_inter_cnt = 0;
 extern foc_handler foc_data_handler;
 void HAL_ADCEx_InjectedConvCpltCallback(ADC_HandleTypeDef *hadc)
 {
-    if (hadc->Instance == ADC1) // 根据ADC实例判断
-    {
+    if (hadc->Instance == ADC1) { // 根据ADC实例判断
         if (adc_inter_cnt < 0xFFFFFFFF)
             adc_inter_cnt++;
         HAL_ADCEx_InjectedStop_IT(&hadc1);
-        Get_ADC_Current(&foc_data_handler);
-        SVPWM_Control(&foc_data_handler);
+        // Get_ADC_Current(&foc_data_handler);
+        // SVPWM_Control(&foc_data_handler);
+        FOC_Control(&foc_data_handler);
         HAL_GPIO_WritePin(GPIOE, GPIO_PIN_1, GPIO_PIN_SET);
         HAL_GPIO_WritePin(GPIOE, GPIO_PIN_1, GPIO_PIN_RESET);
     }
