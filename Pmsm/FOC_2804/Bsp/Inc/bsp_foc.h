@@ -128,4 +128,6 @@ extern float Limit_up_and_down(float input, float limit_down, float limit_up);
 extern void Foc_Svpwm(foc_handler *foc_data, float Ts_pwn, float Udc_tem);
 extern void SVPWM_Control(foc_handler *foc_data);
 extern void FOC_Control(foc_handler *foc_data);
+extern void SVPWM(foc_handler *foc_data, float Ts);
+
 #endif // !_BSP_FOC_H_

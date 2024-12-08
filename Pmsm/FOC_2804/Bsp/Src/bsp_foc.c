@@ -250,12 +250,13 @@ void Speed_Control(foc_handler *foc_data)
  * @param {float} Udc_tem : 母线电压
  * @return {*} : none
  */
+float Tx = 0, Ty = 0, T0 = 0, Ta = 0, Tb = 0, Tc = 0;
 void Foc_Svpwm(foc_handler *foc_data, float Ts_pwn, float Udc_tem)
 {
     float U1 = 0, U2 = 0, U3 = 0;
     uint8_t A = 0, B = 0, C = 0, N = 0, sector = 0;
 
-    float Tx = 0, Ty = 0, T0 = 0, Ta = 0, Tb = 0, Tc = 0;
+    //    float Tx = 0, Ty = 0, T0 = 0, Ta = 0, Tb = 0, Tc = 0;
     float K = SQRT3 * Ts_pwn / Udc_tem; // 公共乘积因子
     uint16_t Tcmp1 = 0, Tcmp2 = 0, Tcmp3 = 0, Tcmp4 = 0;
     uint16_t hDeltaDuty = 0;
@@ -318,7 +319,7 @@ void Foc_Svpwm(foc_handler *foc_data, float Ts_pwn, float Udc_tem)
         break;
     case 6:
         Tx = -K * U3;
-        Ty = -K * U2;
+        Ty = -K * U1;
         break;
     default:
         break;
@@ -590,6 +591,130 @@ void Circle_Limitation(foc_handler *foc_data)
     }
 }
 
+// SVPWM
+void SVPWM(foc_handler *foc_data, float Ts)
+{
+    float sum;
+    float k_svpwm, u1, u2, u3;
+    float t1, t2, t3, t4, t5, t6, t7, ta, tb, tc;
+
+    // step1 计算u1、u2和u3
+    // 计算SVPWM算法中的三个控制电压u1、u2和u3
+    u1 = foc_data->u_beta;
+    u2 = -0.8660254f * foc_data->u_alpha - 0.5f * foc_data->u_beta; // sqrt(3)/2 ≈ 0.86603
+    u3 = 0.8660254f * foc_data->u_alpha - 0.5f * foc_data->u_beta;
+    // step2：扇区判断
+    // 根据u1、u2和u3的正负情况确定所处的扇区
+    foc_data->sector = (u1 > 0.0f) + ((u2 > 0.0f) << 1) + ((u3 > 0.0f) << 2); // N=4*C+2*B+A
+
+    // step3:计算基本矢量电压作用时间（占空比）
+    // 根据扇区的不同，计算对应的t_a、t_b和t_c的值，表示生成的三相电压的时间
+    switch (foc_data->sector) {
+    case 5:
+        // 扇区5
+        t4 = u3;
+        t6 = u1;
+        sum = t4 + t6;
+        if (sum > Ts) {
+            k_svpwm = Ts / sum; //
+            t4 = k_svpwm * t4;
+            t6 = k_svpwm * t6;
+        }
+        t7 = (Ts - t4 - t6) / 2;
+        ta = t4 + t6 + t7;
+        tb = t6 + t7;
+        tc = t7;
+        break;
+    case 1:
+        // 扇区1
+        t2 = -u3;
+        t6 = -u2;
+        sum = t2 + t6;
+        if (sum > Ts) {
+            k_svpwm = Ts / sum; // 计算缩放系数
+            t2 = k_svpwm * t2;
+            t6 = k_svpwm * t6;
+        }
+        t7 = (Ts - t2 - t6) / 2;
+        ta = t6 + t7;
+        tb = t2 + t6 + t7;
+        tc = t7;
+        break;
+    case 3:
+        // 扇区3
+        t2 = u1;
+        t3 = u2;
+        sum = t2 + t3;
+        if (sum > Ts) {
+            k_svpwm = Ts / sum; //
+            t2 = k_svpwm * t2;
+            t3 = k_svpwm * t3;
+        }
+        t7 = (Ts - t2 - t3) / 2;
+        ta = t7;
+        tb = t2 + t3 + t7;
+        tc = t3 + t7;
+        break;
+
+    case 2:
+        // 扇区2
+        t1 = -u1;
+        t3 = -u3;
+        sum = t1 + t3;
+        if (sum > Ts) {
+            k_svpwm = Ts / sum; //
+            t1 = k_svpwm * t1;
+            t3 = k_svpwm * t3;
+        }
+        t7 = (Ts - t1 - t3) / 2;
+        ta = t7;
+        tb = t3 + t7;
+        tc = t1 + t3 + t7;
+        break;
+
+    case 6:
+        // 扇区6
+        t1 = u2;
+        t5 = u3;
+        sum = t1 + t5;
+        if (sum > Ts) {
+            k_svpwm = Ts / sum; //
+            t1 = k_svpwm * t1;
+            t5 = k_svpwm * t5;
+        }
+        t7 = (Ts - t1 - t5) / 2;
+        ta = t5 + t7;
+        tb = t7;
+        tc = t1 + t5 + t7;
+        break;
+
+    case 4:
+        // 扇区4
+        t4 = -u2;
+        t5 = -u1;
+        sum = t4 + t5;
+        if (sum > Ts) {
+            k_svpwm = Ts / sum; //
+            t4 = k_svpwm * t4;
+            t5 = k_svpwm * t5;
+        }
+        t7 = (Ts - t4 - t5) / 2;
+        ta = t4 + t5 + t7;
+        tb = t7;
+        tc = t5 + t7;
+        break;
+
+    default:
+        break;
+    }
+
+    // step4：6路PWM输出
+    TIM1->CCR1 = PWM_PERIOD * ta;
+    TIM1->CCR2 = PWM_PERIOD * tb;
+    TIM1->CCR3 = PWM_PERIOD * tc;
+    TIM1->CCR4 = 5250 / 2;
+}
+
 // FOC控制
 void FOC_Control(foc_handler *foc_data)
 {
@@ -597,7 +722,7 @@ void FOC_Control(foc_handler *foc_data)
     Get_Elec_Angle(foc_data);
 
     // ia ib
-    Get_Ia_Ib(foc_data);
+    // Get_Ia_Ib(foc_data);
 
     // // clark ia、ib->i_alpha,i_beta
     // foc_transform[CLARKE_TRANSFORM](foc_data);
@@ -611,13 +736,15 @@ void FOC_Control(foc_handler *foc_data)
     // Circle_Limitation(foc_data);
 
     // 开环
-    foc_data->uq = 2;
+    foc_data->uq = 2.0f;
+    foc_data->ud = 0.0f;
 
     // inv park ud,uq->u_alpha,u_beta
     foc_transform[PARK_INVERSE_TRANSFORM](foc_data);
 
     // SVPWM
     Foc_Svpwm(foc_data, PWM_FREQ, 11.0f);
+    // SVPWM(foc_data, 1.0f);
 }
 
 /* TIM Update event */

@@ -136,7 +136,7 @@ int main(void)
         /* USER CODE BEGIN 3 */
         cmd();
         if (tim6_uptate_over % 2 == 0)
-            printf("%d\n", foc_data_handler.sector);
+            printf("%d\n", TIM1->CCR1);
     }
     /* USER CODE END 3 */
 }
