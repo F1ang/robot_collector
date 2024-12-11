@@ -4,6 +4,11 @@
         "bsp_cmd.h": "c",
         "bsp_usart.h": "c",
         "main.h": "c",
-        "gpio.h": "c"
+        "gpio.h": "c",
+        "limits": "c",
+        "bsp_foc.h": "c",
+        "bsp_adc.h": "c",
+        "arm_math.h": "c",
+        "adc.h": "c"
     }
 }
