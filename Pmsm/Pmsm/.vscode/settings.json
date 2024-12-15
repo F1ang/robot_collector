@@ -1,0 +1,23 @@
+{
+    "files.associations": {
+        "bsp_as5600.h": "c",
+        "bsp_cmd.h": "c",
+        "bsp_usart.h": "c",
+        "main.h": "c",
+        "gpio.h": "c",
+        "limits": "c",
+        "bsp_foc.h": "c",
+        "bsp_adc.h": "c",
+        "arm_math.h": "c",
+        "adc.h": "c",
+        "stdlib.h": "c",
+        "bsp_dwt.h": "c",
+        "stdint.h": "c",
+        "stm32f4xx_hal.h": "c",
+        "math.h": "c",
+        "tim.h": "c",
+        "bsp_hall.h": "c",
+        "usart.h": "c",
+        "cmath": "c"
+    }
+}
