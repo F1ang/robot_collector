@@ -1,4 +1,5 @@
 #include "bsp_adc.h"
+#include "bsp_hall.h"
 
 bsp_adc_t bsp_adc;
 

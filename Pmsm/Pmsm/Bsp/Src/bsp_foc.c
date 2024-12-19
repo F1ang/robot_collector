@@ -4,6 +4,7 @@
  */
 #include "bsp_foc.h"
 #include "bsp_adc.h"
+#include "bsp_hall.h"
 #include <math.h>
 
 uint32_t tim1_uptate_over = 0, tim6_uptate_over = 0, tim3_uptate_over = 0; // 溢出计数
@@ -451,6 +452,8 @@ void FOC_Control(foc_handler *foc_data)
     foc_data->uq = 2.0f;
     foc_data->ud = 0.0f;
 
+    foc_processHF_IT(foc_data, &hadc1);
+
     // inv park ud,uq->u_alpha,u_beta
     foc_transform[PARK_INVERSE_TRANSFORM](foc_data);
 
@@ -496,6 +499,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     if (htim->Instance == TIM6) {
         if (tim6_uptate_over < 0xFFFFFFFF)
             tim6_uptate_over++;
+        speed_updateMF_IT(&htim6);
     }
 
     if (htim->Instance == TIM3) {

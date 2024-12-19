@@ -129,7 +129,8 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 
             // 计数表示频率 f=clk/(psc*cap)
             foc_data_handler.hall_ops.f_hall = HALL_CLK / (foc_data_handler.hall_ops.hall_psc * foc_data_handler.hall_ops.hall_cap);
-            // 电频率(每个foc周期角度的变化量)
+
+            // 电频率(每个foc周期角度的变化量)  65536/6=10923
             foc_data_handler.hall_ops.dpp = (10923UL * foc_data_handler.hall_ops.f_hall / foc_data_handler.hall_ops.f_foc) * foc_data_handler.hall_ops.dir;
 
             // 滑动均值滤波
@@ -153,7 +154,7 @@ float hall_get_Speed(foc_handler *foc_data)
 {
     /*dpp为整型速度值/每foc执行周期 ，需要后期转化为rad/s*/
     /*所以高频任务的执行周期和65535和2PI需要结合实际弄出个乘积因子完成单位转化过程*/
-    static float K = (float)(PI2_VALUE / 65536 / (FOC_PERIOD / 1000000.0f));
+    static float K = (float)(PI2_VALUE / 65536 / (FOC_PERIOD / 1000000.0f)); // us->s
 
     foc_data->hall_ops.omega_inter = ((float)(K * foc_data->hall_ops.dpp));
 
@@ -176,6 +177,7 @@ float hall_positionEst(foc_handler *foc_data)
         foc_data->hall_ops.refer_theta += 65536L;
     }
 
+    // hall变化=60°=delta theta
     foc_data->hall_ops.comp_dpp = 60 / (foc_data->hall_ops.f_foc / foc_data->hall_ops.f_hall);
     foc_data->hall_ops.hall_theta += (foc_data->hall_ops.dpp + foc_data->hall_ops.comp_dpp); // θ_use
     if (foc_data->hall_ops.hall_theta > 65536L) {
@@ -266,6 +268,7 @@ void speed_updateMF_IT(TIM_HandleTypeDef *htim)
         foc_data_handler.hall_ops.dpp_2 = foc_data_handler.hall_ops.dpp_1;
         foc_data_handler.hall_ops.dpp_1 = foc_data_handler.hall_ops.avg_dpp;
         foc_data_handler.hall_ops.a_dpp = foc_data_handler.hall_ops.dpp_1 - foc_data_handler.hall_ops.dpp_2;
+
         foc_data_handler.hall_ops.dpp = foc_data_handler.hall_ops.dpp_1 + foc_data_handler.hall_ops.a_dpp;
         foc_data_handler.hall_ops.delta_theta = foc_data_handler.hall_ops.refer_theta - foc_data_handler.hall_ops.hall_theta;
 
@@ -291,7 +294,7 @@ void speed_updateMF_IT(TIM_HandleTypeDef *htim)
  * @description      电机的状态机用户可自行定义，这里从简
  *                   HF：High frequency高频
  */
-void foc_processHF_IT(foc_handler *foc_data)
+void foc_processHF_IT(foc_handler *foc_data, ADC_HandleTypeDef *hadc)
 {
     // static float Rv_U = 0, Rv_V = 0, Rv_W = 0;                //<采样电阻电压
     // static float current_U = 0, current_V = 0, current_W = 0; //<三电阻法，相电流存储变量
@@ -350,11 +353,11 @@ void foc_processHF_IT(foc_handler *foc_data)
 
     /*********二选一，根据需求注释掉就可，推荐PLL法********/
     //****************插值法****************//
-    // hall_get_Speed(&hall1);//<插值法估算电角速度rad/s
-    // hall_positionEst(&hall1);//<插值法估算角度
+    // hall_get_Speed(foc_data);//<插值法估算电角速度rad/s
+    // hall_positionEst(foc_data);//<插值法估算角度
     //***********锁相环PLL法***************//
-    // hall_get_Speed(&hall1); //<插值法获取电角速度rad/s
-    // foc->angle_result.electrical_angle = hall_pll_filter(&hall1);
+    hall_get_Speed(foc_data); //<插值法获取电角速度rad/s
+    foc_data->elec_angle = hall_pll_filter(foc_data);
 
     //****机械角速度计算*****//
     // foc->speed_result.eleSpeed = hall1.omega_inter; //<插值法或锁相环法中的估算电角速度都可以带入(推荐插值法速度),单位rad/s

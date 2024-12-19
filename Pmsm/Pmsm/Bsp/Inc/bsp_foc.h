@@ -108,7 +108,7 @@ typedef struct {
     float pll_Te;
 
     uint32_t f_hall, f_foc;
-    int32_t dpp;                      // 电频率
+    int32_t dpp;                      // 电频率(2pi~65536)
     int32_t buffer[WBuffer_MAX_SIZE]; // 均值速度
     uint8_t buffer_index;             // 记录当前buffer缓存的下标
     int32_t dpp_sum, avg_dpp;         // 均值电频率

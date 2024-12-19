@@ -1,6 +1,7 @@
 #ifndef BSP_HALL_H_
 #define BSP_HALL_H_
 
+#include "bsp_foc.h"
 #include "stm32f4xx_hal.h"
 
 #define HALL_U_VALUE HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_6)
@@ -30,5 +31,11 @@
 extern uint8_t bHallState;
 extern void BSP_Hall_Init(void);
 
-#endif /* BSP_HALL_H_ */
+extern float hall_get_Speed(foc_handler *foc_data);   // 电角速度
+extern float hall_positionEst(foc_handler *foc_data); // 插值法电角度
+extern float hall_pll_filter(foc_handler *foc_data);  // PLL电角度
 
+extern void speed_updateMF_IT(TIM_HandleTypeDef *htim);                       // dpp(电角速度与电频率)插值拟合
+extern void foc_processHF_IT(foc_handler *foc_data, ADC_HandleTypeDef *hadc); // 电角度更新
+
+#endif /* BSP_HALL_H_ */
