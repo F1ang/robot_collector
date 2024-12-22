@@ -25,6 +25,7 @@
 #define ABS_X(x)   ((x) < 0 ? -(x) : (x))
 
 #define START_UP_UQ 3.0f // 启动时Uq
+#define START_UP_UD 3.0f // 启动时Ud
 
 #define CKTIM      168000000
 #define PWM_FREQ   16000
@@ -36,7 +37,8 @@
 #define TW_AFTER    ((uint16_t)(((DEADTIME_NS + MAX_TNTR_NS) * 168uL) / 1000ul)) // DT+TN
 
 #define SAMPLING_TIME_NS 700
-#define TW_BEFORE        (((uint16_t)(((((uint16_t)(SAMPLING_TIME_NS))) * 168uL) / 1000ul)) + 1)
+#define TW_BEFORE \
+    (((uint16_t)(((((uint16_t)(SAMPLING_TIME_NS))) * 168uL) / 1000ul)) + 1)
 
 #define MMI 0.95 // 过调制
 #define R1  32768
@@ -119,8 +121,7 @@ typedef struct {
     int32_t a_dpp;
 } hall_hander;
 
-typedef struct
-{
+typedef struct {
     float ua, ub, uc;
     float u_alpha, u_beta;
     float ud, uq;
@@ -167,6 +168,8 @@ typedef enum {
 typedef void (*foc_callbak)(foc_handler *foc_data);
 extern foc_callbak foc_transform[];
 extern foc_handler foc_data_handler;
+extern uint32_t foc_hall_cnt, foc_hall_cnt_sum;
+extern uint32_t tim6_uptate_over; // 溢出计数
 
 extern void foc_register_func(foc_register_func_list id, foc_callbak func);
 extern void TIM1_PWM_Init(void);

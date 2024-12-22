@@ -8,6 +8,7 @@
 #include <math.h>
 
 uint32_t tim1_uptate_over = 0, tim6_uptate_over = 0, tim3_uptate_over = 0; // 溢出计数
+uint32_t foc_hall_cnt = 0, foc_hall_cnt_sum = 0;                           // hall计数
 foc_callbak foc_func[FOC_FUNC_NUM];                                        // 回调函数数组
 
 /* FOC变换函数接口 */
@@ -54,8 +55,8 @@ static void Park_Inv_Transform(foc_handler *foc_data)
     cosVal = arm_cos_f32(foc_data->elec_angle);
     sinVal = arm_sin_f32(foc_data->elec_angle);
 
-    foc_data->u_alpha = -foc_data->uq * sinVal;
-    foc_data->u_beta = foc_data->uq * cosVal;
+    foc_data->u_alpha = foc_data->ud * cosVal - foc_data->uq * sinVal;
+    foc_data->u_beta = foc_data->ud * sinVal + foc_data->uq * cosVal;
 }
 
 // clark逆变换: u_abc<-u_alphab, u_beta->计算扇区及作用时间
@@ -93,7 +94,8 @@ static float Low_Pass_Filter(foc_handler *foc_data, float dt)
 {
     float lpf_speed = 0;
     foc_data->speed_lpf_a = 0.8;
-    lpf_speed = (foc_data->speed_lpf_a * foc_data->speed_last) + (1.0f - foc_data->speed_lpf_a) * foc_data->speed;
+    lpf_speed = (foc_data->speed_lpf_a * foc_data->speed_last) +
+                (1.0f - foc_data->speed_lpf_a) * foc_data->speed;
     foc_data->speed_last = lpf_speed;
     return lpf_speed;
 }
@@ -190,14 +192,14 @@ void Foc_Svpwm(foc_handler *foc_data, float Ts_pwn, float Udc_tem)
 
     // 7段式-CCR分配导通时间
     T0 = (Ts_pwn - Tx - Ty) / 2;
-    Ta = T0 / 2;
+    Ta = T0 / 2; // 最先作用的PWM对的时刻(需要按不同扇区分配)
     Tb = Ta + Tx / 2;
     Tc = Tb + Ty / 2;
 
     /* 3、SVPWM控制 */
     switch (sector) {
     case 1:
-        Tcmp1 = Ta; // 第一个PWM=CCR1对应的 导通时刻(!!!PWM1!!!),扇区1对应Ta
+        Tcmp1 = Ta; // 第一个PWM=CCR1对应的 导通时刻(!!!PWM1!!!),扇区1对应CCR1=Ta
         Tcmp2 = Tb;
         Tcmp3 = Tc;
 
@@ -371,15 +373,13 @@ void Foc_Svpwm(foc_handler *foc_data, float Ts_pwn, float Udc_tem)
 // 预定位(开环强拖)
 void Start_Up(foc_handler *foc_data)
 {
-    foc_data->uq = START_UP_UQ; // 开环拖动theta=0,Ud=a,Uq=0
-    foc_data->ud = 0.0f;
-    foc_data->elec_angle = 0.0f;
+    foc_data->uq = 0; // 开环拖动theta=0,Ud=a,Uq=0
+    foc_data->ud = START_UP_UD;
+    foc_data->elec_angle = -90.0f;
     foc_transform[PARK_INVERSE_TRANSFORM](foc_data);
     foc_transform[CLARKE_INVERSE_TRANSFORM](foc_data);
     Foc_Svpwm(foc_data, PWM_FREQ, 23.0f);
-    HAL_Delay(2000);
-
-    // foc_data->angle_offset = bsp_as5600GetAngle();
+    HAL_Delay(3000);
 
     foc_data->uq = 0;
     foc_data->ud = 0.0f;
@@ -401,22 +401,28 @@ void Get_Ia_Ib(foc_handler *foc_data)
     switch (foc_data->sector) {
     case 4:
     case 5: // Current on Phase C not accessible
-        foc_data->ia = (float)HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_1) / 32768 * 3.3f;
-        foc_data->ib = (float)HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_2) / 32768 * 3.3f;
+        foc_data->ia =
+            (float)HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_1) / 32768 * 3.3f;
+        foc_data->ib =
+            (float)HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_2) / 32768 * 3.3f;
         foc_data->ic = -foc_data->ia - foc_data->ib;
         break;
 
     case 6:
     case 1: // Current on Phase A not accessible
-        foc_data->ib = (float)HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_2) / 32768 * 3.3f;
-        foc_data->ic = (float)HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_3) / 32768 * 3.3f;
+        foc_data->ib =
+            (float)HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_2) / 32768 * 3.3f;
+        foc_data->ic =
+            (float)HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_3) / 32768 * 3.3f;
         foc_data->ia = -foc_data->ib - foc_data->ic;
         break;
 
     case 2:
     case 3: // Current on Phase B not accessible
-        foc_data->ia = (float)HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_1) / 32768 * 3.3f;
-        foc_data->ic = (float)HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_3) / 32768 * 3.3f;
+        foc_data->ia =
+            (float)HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_1) / 32768 * 3.3f;
+        foc_data->ic =
+            (float)HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_3) / 32768 * 3.3f;
         foc_data->ib = -foc_data->ia - foc_data->ic;
         break;
     default:
@@ -439,17 +445,20 @@ void Circle_Limitation(foc_handler *foc_data)
     }
 }
 
-// FOC控制
+// FOC控制(高频任务)
 void FOC_Control(foc_handler *foc_data)
 {
     // electrical angle -- hall->dpp
-    if (tim6_uptate_over % 100 == 0) {
-        foc_data->elec_angle += 2;
-        foc_data->elec_angle = fmod(foc_data->elec_angle, 360 * PAIRS_OF_POLES);
+    if (tim6_uptate_over % 50 == 0) {
+        foc_data->elec_angle += 10;
+        foc_data->elec_angle = fmod(foc_data->elec_angle, 360);
     }
+    // foc_hall_cnt++;
+    // if (foc_hall_cnt_sum > 0)
+    //     foc_data_handler.hall_ops.dpp = 10923 * foc_hall_cnt / foc_hall_cnt_sum;
 
     // 开环
-    foc_data->uq = 2.0f;
+    foc_data->uq = 3.0f;
     foc_data->ud = 0.0f;
 
     foc_processHF_IT(foc_data, &hadc1);
