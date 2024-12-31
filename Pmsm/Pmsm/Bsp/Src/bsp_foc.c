@@ -1,15 +1,8 @@
-/*
- * @Welcome: Hacker
- * @Description: Excellent Day
- */
 #include "bsp_foc.h"
-#include "bsp_adc.h"
-#include "bsp_hall.h"
-#include <math.h>
 
 uint32_t tim1_uptate_over = 0, tim6_uptate_over = 0, tim3_uptate_over = 0; // 溢出计数
-uint32_t foc_hall_cnt = 0, foc_hall_cnt_sum = 0;                           // hall计数
 foc_callbak foc_func[FOC_FUNC_NUM];                                        // 回调函数数组
+foc_handler foc_data_handler;
 
 /* FOC变换函数接口 */
 static void Clarke_Transform(foc_handler *foc_data);
@@ -24,8 +17,65 @@ foc_callbak foc_transform[] = {
     [PARK_INVERSE_TRANSFORM] = Park_Inv_Transform,
 };
 
-//--------------------------------------------------------------
-// clark变换: i_abc->i_alphab, i_beta
+/**
+ * @brief: TIM PWM初始化、ADC采样触发
+ * @return {*} : None
+ */
+void TIM1_PWM_Init(void)
+{
+    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
+    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
+    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
+    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4);
+
+    HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_1); // 启动 PWM 通道1 互补信号输出
+    HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_2); // 启动 PWM 通道2 互补信号输出
+    HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_3); // 启动 PWM 通道1 互补信号输出
+
+    HAL_TIM_Base_Start_IT(&htim6); // speed calculate
+
+    // __HAL_TIM_MOE_ENABLE(&htim1);
+    // HAL_TIM_Base_Start_IT(&htim1); // update interrupt event(ENABLE ADC JEOC)
+
+    // // CC4触发ADC采样
+    // HAL_ADCEx_InjectedStart(&hadc1); // 注入通道启动
+    // HAL_ADCEx_InjectedStart_IT(&hadc1);
+}
+
+/**
+ * @brief: 控制环参数初始化
+ * @return {*} : None
+ */
+void FOC_Init(void)
+{
+    // 转矩开环
+    foc_data_handler.id = 0;
+    foc_data_handler.iq = 0;
+    foc_data_handler.torque_loop.target_torque = 0;
+    foc_data_handler.flux_loop.target_flux = 0;
+
+    // 速度开环
+    foc_data_handler.ud = 0;
+    foc_data_handler.uq = 0;
+}
+
+/**
+ * @brief:FOC的功能注册函数接口
+ * @param {foc_register_func_list} id : 函数enum
+ * @param {foc_callbak} func : 函数回调
+ * @return {*} : None
+ */
+void foc_register_func(foc_register_func_list id, foc_callbak func)
+{
+    foc_func[id] = func;
+    return;
+}
+
+/**
+ * @brief: clark变换: i_abc->i_alphab, i_beta
+ * @param {foc_handler} *foc_data
+ * @return {*} : None
+ */
 static void Clarke_Transform(foc_handler *foc_data)
 {
     /* Calculate pIalpha using the equation, pIalpha = Ia */
@@ -34,7 +84,11 @@ static void Clarke_Transform(foc_handler *foc_data)
     foc_data->i_bphla = ((float)_1_SQRT3 * foc_data->ia + (float)_2_SQRT3 * foc_data->ib);
 }
 
-// park变换: i_alphab, i_beta->id, iq
+/**
+ * @brief: park变换: i_alphab, i_beta->id, iq
+ * @param {foc_handler} *foc_data
+ * @return {*} : None
+ */
 static void Park_Transform(foc_handler *foc_data)
 {
     float cosVal = 0, sinVal = 0;
@@ -48,7 +102,11 @@ static void Park_Transform(foc_handler *foc_data)
     foc_data->iq = -foc_data->i_aphla * sinVal + foc_data->i_bphla * cosVal;
 }
 
-// park逆变换: uq, ud->u_alphab, u_beta
+/**
+ * @brief: park逆变换: uq, ud->u_alphab, u_beta
+ * @param {foc_handler} *foc_data
+ * @return {*} : None
+ */
 static void Park_Inv_Transform(foc_handler *foc_data)
 {
     float cosVal = 0, sinVal = 0;
@@ -59,7 +117,11 @@ static void Park_Inv_Transform(foc_handler *foc_data)
     foc_data->u_beta = foc_data->ud * sinVal + foc_data->uq * cosVal;
 }
 
-// clark逆变换: u_abc<-u_alphab, u_beta->计算扇区及作用时间
+/**
+ * @brief: clark逆变换: u_abc<-u_alphab, u_beta->计算扇区及作用时间
+ * @param {foc_handler} *foc_data
+ * @return {*} : None
+ */
 static void Clarke_Inv_Transform(foc_handler *foc_data)
 {
     foc_data->ua = foc_data->u_alpha;
@@ -68,47 +130,12 @@ static void Clarke_Inv_Transform(foc_handler *foc_data)
 }
 
 /**
- * @brief:FOC的功能注册函数接口
- * @param {foc_register_func_list} id : 函数enum
- * @param {foc_callbak} func : 函数回调
- * @return {*} : none
- */
-void foc_register_func(foc_register_func_list id, foc_callbak func)
-{
-    foc_func[id] = func;
-    return;
-}
-//--------------------------------------------------------------
-
-//--------------------------------------------------------------
-// 返回(limit_down,limit_up)间值
-float Limit_up_and_down(float input, float limit_down, float limit_up)
-{
-    float output = 0;
-    output = (input < limit_down) ? limit_down : ((input > limit_up) ? limit_up : input);
-    return output;
-}
-
-// 一阶线性低通滤波
-static float Low_Pass_Filter(foc_handler *foc_data, float dt)
-{
-    float lpf_speed = 0;
-    foc_data->speed_lpf_a = 0.8;
-    lpf_speed = (foc_data->speed_lpf_a * foc_data->speed_last) +
-                (1.0f - foc_data->speed_lpf_a) * foc_data->speed;
-    foc_data->speed_last = lpf_speed;
-    return lpf_speed;
-}
-//--------------------------------------------------------------
-
-//--------------------------------------------------------------
-/**
- * @brief:
+ * @brief: SVPWM Control
  * @param {foc_handler} *foc_data
  * @param {float} T
  * @param {float} Ts_pwn : 单路PWM周期
  * @param {float} Udc_tem : 母线电压
- * @return {*} : none
+ * @return {*} : None
  */
 void Foc_Svpwm(foc_handler *foc_data, float Ts_pwn, float Udc_tem)
 {
@@ -370,70 +397,11 @@ void Foc_Svpwm(foc_handler *foc_data, float Ts_pwn, float Udc_tem)
     TIM1->CCR4 = 5250 - DEADTIME_NS;
 }
 
-// 预定位(开环强拖)
-void Start_Up(foc_handler *foc_data)
-{
-    foc_data->uq = 0; // 开环拖动theta=0,Ud=a,Uq=0
-    foc_data->ud = START_UP_UD;
-    foc_data->elec_angle = -90.0f;
-    foc_transform[PARK_INVERSE_TRANSFORM](foc_data);
-    foc_transform[CLARKE_INVERSE_TRANSFORM](foc_data);
-    Foc_Svpwm(foc_data, PWM_FREQ, 23.0f);
-    HAL_Delay(3000);
-
-    foc_data->uq = 0;
-    foc_data->ud = 0.0f;
-    foc_data->elec_angle = 0.0f;
-    foc_transform[PARK_INVERSE_TRANSFORM](foc_data);
-    foc_transform[CLARKE_INVERSE_TRANSFORM](foc_data);
-    foc_data->m_mode = MOTOR_RUN;
-    Foc_Svpwm(foc_data, PWM_FREQ, 23.0f);
-}
-
-//--------------------------------------------------------------
-
-//--------------------------------------------------------------
-// 相电流
-void Get_Ia_Ib(foc_handler *foc_data)
-{
-    if (foc_data->sector == 0)
-        return;
-    switch (foc_data->sector) {
-    case 4:
-    case 5: // Current on Phase C not accessible
-        foc_data->ia =
-            (float)HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_1) / 32768 * 3.3f;
-        foc_data->ib =
-            (float)HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_2) / 32768 * 3.3f;
-        foc_data->ic = -foc_data->ia - foc_data->ib;
-        break;
-
-    case 6:
-    case 1: // Current on Phase A not accessible
-        foc_data->ib =
-            (float)HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_2) / 32768 * 3.3f;
-        foc_data->ic =
-            (float)HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_3) / 32768 * 3.3f;
-        foc_data->ia = -foc_data->ib - foc_data->ic;
-        break;
-
-    case 2:
-    case 3: // Current on Phase B not accessible
-        foc_data->ia =
-            (float)HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_1) / 32768 * 3.3f;
-        foc_data->ic =
-            (float)HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_3) / 32768 * 3.3f;
-        foc_data->ib = -foc_data->ia - foc_data->ic;
-        break;
-    default:
-        foc_data->ia = 0;
-        foc_data->ib = 0;
-        foc_data->ic = 0;
-        break;
-    }
-}
-
-// 过调制
+/**
+ * @brief: 过调制
+ * @param {foc_handler} *foc_data
+ * @return {*} : None
+ */
 void Circle_Limitation(foc_handler *foc_data)
 {
     float V_temp = 0, temp = 0;
@@ -445,53 +413,27 @@ void Circle_Limitation(foc_handler *foc_data)
     }
 }
 
-// FOC控制(高频任务)
+/**
+ * @brief: FOC控制(高频任务)
+ * @param {foc_handler} *foc_data
+ * @return {*} : None
+ */
 void FOC_Control(foc_handler *foc_data)
 {
     // electrical angle -- hall->dpp
-    if (tim6_uptate_over % 50 == 0) {
-        foc_data->elec_angle += 10;
-        foc_data->elec_angle = fmod(foc_data->elec_angle, 360);
-    }
-    // foc_hall_cnt++;
-    // if (foc_hall_cnt_sum > 0)
-    //     foc_data_handler.hall_ops.dpp = 10923 * foc_hall_cnt / foc_hall_cnt_sum;
+    HALL_IncElectricalAngle(); // 电角度dpp
+
+    foc_data->elec_angle = HALL_GetElectricalAngle() * K_CON;
 
     // 开环
-    foc_data->uq = 3.0f;
+    foc_data->uq = 15.0f;
     foc_data->ud = 0.0f;
-
-    foc_processHF_IT(foc_data, &hadc1);
 
     // inv park ud,uq->u_alpha,u_beta
     foc_transform[PARK_INVERSE_TRANSFORM](foc_data);
 
     // SVPWM
     Foc_Svpwm(foc_data, PWM_FREQ, 23.0f);
-}
-//--------------------------------------------------------------
-
-// TIM PWM初始化、ADC采样触发
-void TIM1_PWM_Init(void)
-{
-    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
-    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
-    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
-    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4);
-
-    HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_1); // 启动 PWM 通道1 互补信号输出
-    HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_2); // 启动 PWM 通道2 互补信号输出
-    HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_3); // 启动 PWM 通道1 互补信号输出
-
-    __HAL_TIM_MOE_ENABLE(&htim1);
-    Start_Up(&foc_data_handler);
-
-    HAL_TIM_Base_Start_IT(&htim1); // update interrupt event
-    HAL_TIM_Base_Start_IT(&htim6);
-
-    // CC4触发ADC采样
-    HAL_ADCEx_InjectedStart(&hadc1); // 注入通道启动
-    HAL_ADCEx_InjectedStart_IT(&hadc1);
 }
 
 /* TIM Update event */
@@ -502,19 +444,30 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
             tim1_uptate_over++;
         HAL_GPIO_WritePin(GPIOE, GPIO_PIN_0, GPIO_PIN_SET);
         HAL_GPIO_WritePin(GPIOE, GPIO_PIN_0, GPIO_PIN_RESET);
+
+        __HAL_ADC_CLEAR_FLAG(&hadc1, ADC_FLAG_JEOC);
         HAL_ADCEx_InjectedStart_IT(&hadc1);
     }
 
     if (htim->Instance == TIM6) {
         if (tim6_uptate_over < 0xFFFFFFFF)
             tim6_uptate_over++;
-        speed_updateMF_IT(&htim6);
+        // HALL_ClearRotorFreq_Dpp();
     }
 
-    if (htim->Instance == TIM3) {
+    if (htim->Instance == TIM3) { // HALL捕获定时器
         if (tim3_uptate_over < 0xFFFFFFFF) {
             tim3_uptate_over++;
-            foc_data_handler.hall_ops.overcount++;
+        }
+
+        // an update event occured for this interrupt request generation
+        if (bGP1_OVF_Counter < U8_MAX) {
+            bGP1_OVF_Counter++;
+        }
+
+        if (bGP1_OVF_Counter >= HALL_MAX_OVERFLOWS) {
+            HallTimeOut = TRUE;
+            HALL_ClearRotorFreq_Dpp();
         }
     }
 }

@@ -157,9 +157,9 @@ void set_speed(void)
     // bsp_adc.ki = (float)(atof(buf[3])) / 10;
 
     // svpwm
-    foc_data_handler.tq_loop.kp = (float)(atof(buf[1])) / 10;
-    foc_data_handler.tq_loop.kp_flux = 0;
-    foc_data_handler.tq_loop.target_torque = (float)(atof(buf[2])); // 单位0.1A
+//    foc_data_handler.tq_loop.kp = (float)(atof(buf[1])) / 10;
+//    foc_data_handler.tq_loop.kp_flux = 0;
+//    foc_data_handler.tq_loop.target_torque = (float)(atof(buf[2])); // 单位0.1A
 
     printf("\t[%.2f]\t[%.2f]\t[%.1f]\t\r\n",
            atof(buf[1]),

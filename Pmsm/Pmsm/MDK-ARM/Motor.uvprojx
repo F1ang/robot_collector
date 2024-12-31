@@ -339,7 +339,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32F407xx,ARM_MATH_CM4,__FPU_USED=1U,__FPU_PRESENT=1U,__CC_ARM,ARM_MATH_MATRIX_CHECK,ARM_MATH_ROUNDING</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../Drivers/STM32F4xx_HAL_Driver/Inc;../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32F4xx/Include;../Drivers/CMSIS/Include;../Bsp/Inc;../Drivers/CMSIS/DSP/Include;../Middlewares/ST/ARM/DSP/Inc</IncludePath>
+              <IncludePath>../Core/Inc;../Drivers/STM32F4xx_HAL_Driver/Inc;../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32F4xx/Include;../Drivers/CMSIS/Include;..\Bsp\Inc;../Drivers/CMSIS/DSP/Include;../Middlewares/ST/ARM/DSP/Inc</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -577,6 +577,16 @@
               <FileName>bsp_hall.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Bsp\Src\bsp_hall.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_math.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Bsp\Src\bsp_math.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_motor.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Bsp\Src\bsp_motor.c</FilePath>
             </File>
           </Files>
         </Group>

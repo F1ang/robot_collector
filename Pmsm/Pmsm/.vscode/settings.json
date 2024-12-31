@@ -18,6 +18,11 @@
         "tim.h": "c",
         "bsp_hall.h": "c",
         "usart.h": "c",
-        "cmath": "c"
+        "cmath": "c",
+        "bsp_motor.h": "c",
+        "stdbool.h": "c",
+        "stm32f4xx_hal_conf.h": "c",
+        "stm32f4xx_hal_tim.h": "c",
+        "stm32f4xx_hal_adc_ex.h": "c"
     }
 }
