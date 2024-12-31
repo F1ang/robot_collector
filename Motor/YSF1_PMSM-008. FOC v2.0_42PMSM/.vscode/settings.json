@@ -1,0 +1,19 @@
+{
+    "files.associations": {
+        "mc_globals.h": "c",
+        "mc_type.h": "c",
+        "mc_const.h": "c",
+        "mc_control_param.h": "c",
+        "stm32f10x.h": "c",
+        "mc_clarke_park.h": "c",
+        "stm32f10x_mclib.h": "c",
+        "limits": "c",
+        "mc_hall_prm.h": "c",
+        "stm32f10x_hall.h": "c",
+        "bsp_lcd.h": "c",
+        "stm32f10x_mcconf.h": "c",
+        "mc_motorcontrol_layer.h": "c",
+        "mc_state_observer_param.h": "c",
+        "stm32f10x_svpwm_3shunt.h": "c"
+    }
+}
