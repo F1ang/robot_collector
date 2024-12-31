@@ -407,3 +407,20 @@ Id平行定子磁场,Iq则垂直.
 19、!!本质:FOC控制要生成一个超前转子(d轴)90度的磁场!!   !!Is产生的磁场!!
 所有的变换最终结果都是为了生成超前转子90度的磁场，而电角度只是为了提供转子的位置，方便磁场在各个坐标系之间进行变换。
 相位校准:定义零电角度=d与alpha的夹角=>开环强拖校准=>thata=0,Ud=x,Uq=0
+
+20、Update Event(中心对齐=ARR/2、0)->TRGO输出->ADC采样->确保每个PWM周期进行ADC采样
+TRGO信号会在每个PWM周期的开始/中点(即更新事件发生时),触发ADC采样
+
+溢出更新中断:计数溢出->TRGO更新事件->ADC中断
+CC4输出比较事件(非CC4中断):CCR4比较事件->ADC采样转换(Disable EXT ADC)->Updata中断(ReEnable EXT ADC)
+HALL预定位电角度=>外同步加速=>运行
+电角度校准:65536~360°   补偿:hRotorFreq_dpp(dpp=每个FOC周期电角度的变化)
+HALL捕获次数hCaptCounter  捕获超时HallTimeOut(溢出造成)
+
+HALL定时器溢出处理bGP1_OVF_Counter/未溢出处理->定时器捕获hCapture、hPrscReg、bDirection->滑动滤波出hRotorFreq_dpp
+(注:捕获超时、分辨率太低、速度太慢、第一次捕获-> dpp=0)  dpp=N_foc/N_hall=(psc+1) *cnt = 单位pwm周期(1hz)
+(psc+1)*cap个timer时钟周期(1/CLK)  f/pole=>hz=> x 2pi => w
+
+21、单路f_pwm=f_tim=32khz => ARR=clk/((psc+1)*对齐f_pwm)  对齐f_pwm=16khz=f_adc=f_电流环
+同步电角度(相位校准)=>定位电机A相的反电动势最高点作为电角度的0°=>即HALL信号的相角滞后/超前
+计数划分:总计数f_hall/算法计数f_foc = pwm周期的分计数频率f_0  f_0*θ=w_e  θ对于F1=>单边沿HALL(仅5 3 6状态)=>65536/3
